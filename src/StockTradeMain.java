@@ -1,10 +1,15 @@
 import java.sql.*;
 import java.util.Scanner;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 public class StockTradeMain {
-    public String date='01/02/2014'
+    public String currentDate="2014-12-1"; //default december 1st 2014
+    
+    SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd");
+    Date date = dt.parse(currentDate);
     
     public static final String HOST = "jdbc:mysql://cs174a.engr.ucsb.edu:3306/domenicdipeppeDB";
     public static final String USER = "domenicdipeppe";
