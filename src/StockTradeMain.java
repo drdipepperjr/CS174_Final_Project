@@ -108,19 +108,17 @@ public class StockTradeMain {
                     
                     boolean loggedin=true;
                     while (loggedin){
-                        Scanner scan = new Scanner(System.in);
-                        Scanner input = new Scanner(System.in);
                         // Menu starts from here
                         
                         System.out.println("Enter on of the following options:");
                         System.out.println("[ Options: Deposit, Withdraw, Buy, Sell, Get Balence, Get Monthly Stock Transactions, Logout, List Current Stock Prices, List Movie Information, Get Top Movies, Get Reviews]");
-                        String choice = input.nextLine();
+                        String choice = scanner.nextLine();
                         //Options
-                        while(true){
+                        /*while(true){
                             //deposit
                             if(choice.equals("Deposit")||choice.equals("deposit")||choice.equals("D")||choice.equals("d")){
                                 System.out.print("Enter amount to deposit:  ");
-                                double amount = scan.nextDouble();
+                                double amount = scanner.nextDouble();
                                 if(amount <= 0){
                                     System.out.println("You must deposit an amount greater than 0.");
                                 } else {
@@ -134,7 +132,7 @@ public class StockTradeMain {
                             // withdraw
                             else if(choice.equals("Withdraw")||choice.equals("withdraw")||choice.equals("W")||choice.equals("w")){
                                 System.out.print("Enter amount to be withdrawn: ");
-                                double amount = scan.nextDouble();
+                                double amount = scanner.nextDouble();
                                 //TODO:get balence
                                 if (amount > balance){
                                     System.out.println("Not enough in balence");
@@ -148,7 +146,7 @@ public class StockTradeMain {
                             // buy
                             else if(choice.equals("Buy")||choice.equals("buy")||choice.equals("B")||choice.equals("b")){
                                 System.out.println("Enter stock name: ");
-                                String stockID = scan.nextLine();
+                                String stockID = scanner.nextLine();
                                 //if stockID exists
                                 //get balence
                                 //get current stock price
@@ -160,7 +158,7 @@ public class StockTradeMain {
                             // sell
                             else if(choice.equals("Sell")||choice.equals("sell")||choice.equals("S")||choice.equals("s")){
                                 System.out.println("Enter stock name: ");
-                                String stockID = scan.nextLine();
+                                String stockID = scanner.nextLine();
                                 //if stockID exists
                                 //get balence
                                 //get current stock price
@@ -204,7 +202,7 @@ public class StockTradeMain {
                                 System.out.print("Not An Option");
                                 
                             }
-                        }
+                        }*/
                     }
                 }
                 
@@ -221,27 +219,28 @@ public class StockTradeMain {
                 // end of menu loop
                 
                 // Otherwise, do other stuff
-                String A = usernameCheck.getString("name");
+                //String A = usernameCheck.getString("name");
                 //int B = resultSet.getInt("B");
                 //int C = resultSet.getInt("C");
                 
-                System.out.println(A);
-                
-                
-            } catch (SQLException e) {
-                e.printStackTrace();
-            } finally {
-                if (statement != null) {
-                    statement.close();
-                }
-                
-                if (connection != null) {
-                    connection.close();
-                }
+                //System.out.println(A);
             }
             
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (statement != null) {
+                statement.close();
+            }
+            
+            if (connection != null) {
+                connection.close();
+            }
         }
+        
+        
     }
 }
+
 
 
