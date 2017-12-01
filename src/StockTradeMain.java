@@ -1,10 +1,10 @@
 import java.sql.*;
 import java.util.Scanner;
+import java.text.DecimalFormat;
+
 
 public class StockTradeMain {
-    public int month=1;
-    public int data=1;
-    public int year=2017;
+    public String date='01/02/2014'
     
     public static final String HOST = "jdbc:mysql://cs174a.engr.ucsb.edu:3306/domenicdipeppeDB";
     public static final String USER = "domenicdipeppe";
@@ -108,6 +108,7 @@ public class StockTradeMain {
 		    TraderInterface TI = new TraderInterface(username);
 		    TI.beginSession();
                    
+                    
                 }
                 
                 else if("quit".equals(input)){
@@ -136,6 +137,4 @@ public class StockTradeMain {
         
     }
 }
-
-
 
