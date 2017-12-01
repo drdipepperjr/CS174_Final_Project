@@ -103,7 +103,7 @@ public class StockTradeMain {
                     ResultSet usernameCheck = ps.executeQuery();
                     if(!usernameCheck.first()){
                         System.out.println("Invalid username/password combination.");
-                        System.exit(0);
+                        continue;
                     }
                     
                     TraderInterface ti= new TraderInterface(username, password);
