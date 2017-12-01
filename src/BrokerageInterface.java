@@ -48,7 +48,7 @@ public class BrokerageInterface {
     // Given a customer,  do the following for each account she/he owns:
     // generate a list of all transactions that have occurred in the current month.
     // This statement should list the name and email address of the customer.
-    public void generateMonthlyStatement(Customer c){
+    public void generateMonthlyStatement(){ //(string username?)
 
     }
     
@@ -77,7 +77,7 @@ public class BrokerageInterface {
     }
 
     // Generate a list of all accounts associated with a particular customer and the current balance.
-    public void customerReport(Customer c){
+    public void customerReport(){
 	
     }
 
