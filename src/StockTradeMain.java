@@ -1,9 +1,6 @@
 import java.sql.*;
 import java.util.Scanner;
 
-
-
-
 public class StockTradeMain {
     public int month=1;
     public int data=1;
@@ -84,8 +81,8 @@ public class StockTradeMain {
                         else
                             System.out.println("Sorry, username is already taken. Please enter a unique username");
                     }
+                    
                 }
-                
                 
                 else if("existing".equals(input)){// Prompt user for username and password
                     String username, password;
@@ -114,7 +111,7 @@ public class StockTradeMain {
                         Scanner scan = new Scanner(System.in);
                         Scanner input = new Scanner(System.in);
                         // Menu starts from here
-
+                        
                         System.out.println("Enter on of the following options:");
                         System.out.println("[ Options: Deposit, Withdraw, Buy, Sell, Get Balence, Get Monthly Stock Transactions, Logout, List Current Stock Prices, List Movie Information, Get Top Movies, Get Reviews]");
                         String choice = input.nextLine();
@@ -157,7 +154,7 @@ public class StockTradeMain {
                                 //get current stock price
                                 //check if enough money
                                 System.out.println("New stock balence:");
-
+                                
                             }
                             
                             // sell
@@ -171,7 +168,7 @@ public class StockTradeMain {
                             }
                             //get market balence
                             else if(choice.equals("Get Balence")||choice.equals("Get balence")||choice.equals("get balence")){
-                            
+                                
                             }
                             
                             //get stock transaction history
@@ -208,19 +205,20 @@ public class StockTradeMain {
                                 
                             }
                         }
-                        
-                        
-                        else if("quit".equals(input)){
-                            System.out.println("Bye.");
-                            System.exit(0);
-                        }
-                        
-                        else{
-                            System.out.println("Sorry, that was not a valid respone. Please try again.");
-                        }
                     }
-                    
-                }   // end of menu loop
+                }
+                
+                else if("quit".equals(input)){
+                    System.out.println("Bye.");
+                    System.exit(0);
+                }
+                
+                else{
+                    System.out.println("Sorry, that was not a valid respone. Please try again.");
+                }
+                
+                
+                // end of menu loop
                 
                 // Otherwise, do other stuff
                 String A = usernameCheck.getString("name");
@@ -245,3 +243,5 @@ public class StockTradeMain {
         }
     }
 }
+
+
