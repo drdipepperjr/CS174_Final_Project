@@ -30,16 +30,56 @@ public class StockTradeMain {
 		if("new".equals(input)){
 		    String newusername;
 		    String newpassword;
-		    System.out.print("Please enter your username");
-		    newusername = scanner.nextLine();
 
-		    // Check DB for existing user
-		    PreparedStatement ps = connection.prepareStatement("SELECT * from Customers WHERE username=?");
-		    ps.setString(1,newusername);
-		    ResultSet existinguser = ps.executeQuery();
-		    if(!existinguser.first()){
-			// TODO: add user to the DB
-			System.out.println("Username is unique!");
+		    while(true){
+			System.out.print("Please enter your new username: ");
+			newusername = scanner.nextLine();
+			
+			// Check DB for existing user
+			PreparedStatement ps = connection.prepareStatement("SELECT * from Customers WHERE username=?");
+			ps.setString(1,newusername);
+			ResultSet existinguser = ps.executeQuery();
+			if(!existinguser.first()){
+			    String name, address, state, phone, email, SSN;
+			    int taxid;
+			    
+			    // Ask user for personal info
+			    System.out.print("Please enter your password: ");
+			    newpassword = scanner.nextLine();
+			    System.out.print("Please enter your name: ");
+			    name = scanner.nextLine();
+			    System.out.print("Please enter your address: ");
+			    address = scanner.nextLine();
+			    System.out.print("Please enter the state you live in (2 character state code): ");
+			    state = scanner.nextLine();
+			    System.out.print("Please enter your phone number ( (xxx)xxxxxxx ): ");
+			    phone = scanner.nextLine();
+			    System.out.print("Please enter your email: ");
+			    email = scanner.nextLine();
+			    System.out.print("Please enter your Tax Identification Number (4 digits): ");
+			    taxid = scanner.nextInt();
+			    scanner.nextLine();
+			    System.out.print("Please enter your Social Security Number (xxx-xx-xxxx): ");
+			    SSN = scanner.nextLine();
+			    
+			    // Insert values into the DB
+			    ps = connection.prepareStatement("INSERT into Customers (name, username, password, address, state, phone, email, taxid, SSN) VALUES(?,?,?,?,?,?,?,?,?)");
+			    ps.setString(1,name);
+			    ps.setString(2,newusername);
+			    ps.setString(3,newpassword);
+			    ps.setString(4,address);
+			    ps.setString(5,state);
+			    ps.setString(6,phone);
+			    ps.setString(7,email);
+			    ps.setInt(8,taxid);
+			    ps.setString(9,SSN);
+			    ps.executeUpdate();
+
+			    System.out.println("Thank you for joining us. Please login to continue");
+			    break;
+			}
+			else
+			    System.out.println("Sorry, username is already taken. Please enter a unique username");
 		    }
 		}
 		
