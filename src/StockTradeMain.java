@@ -96,17 +96,26 @@ public class StockTradeMain {
                     PreparedStatement ps = connection.prepareStatement("SELECT * from Customers WHERE username=? AND password=?");
                     ps.setString(1,username);
                     ps.setString(2,password);
-                    
-                    // If there is no matching entry (first() returns false) then exit program
-                    ResultSet usernameCheck = ps.executeQuery();
-                    if(!usernameCheck.first()){
-                        System.out.println("Invalid username/password combination.");
-                        continue;
-                    }
-                    
-                    TraderInterface ti= new TraderInterface(username, password);
-                    ti.initialize();
-                    
+
+		    // check for admin (may need to add admins to the db later)
+		    if("admin".equals(username) && "secret".equals(password)){
+			BrokerageInterface bi = new BrokerageInterface();
+			bi.initialize();
+		    }
+
+		    // Customer Login
+		    else{
+			// If there is no matching entry (first() returns false) then exit program
+			ResultSet usernameCheck = ps.executeQuery();
+			if(!usernameCheck.first()){
+			    System.out.println("Invalid username/password combination.");
+			    continue;
+			}
+			
+			TraderInterface ti= new TraderInterface(username, password);
+			ti.initialize();
+		    }
+		}
                     /*
                     //if username is not manager
                     
@@ -167,7 +176,7 @@ public class StockTradeMain {
                             }
                         }
                         */
-                }
+                
                 
                 else if("quit".equals(input)){
                     System.out.println("Bye.");

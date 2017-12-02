@@ -28,6 +28,8 @@ public class BrokerageInterface {
 	catch (SQLException e) {
 	    e.printStackTrace();
 	}
+
+	endSession();
     }
    
     public void endSession() throws SQLException{
