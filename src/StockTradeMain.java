@@ -4,7 +4,7 @@ import java.text.DecimalFormat;
 
 
 public class StockTradeMain {
-    public String date="01/02/2014";
+    //public String date="01/02/2014";
     
     public static final String HOST = "jdbc:mysql://cs174a.engr.ucsb.edu:3306/domenicdipeppeDB";
     public static final String USER = "domenicdipeppe";
@@ -86,6 +86,7 @@ public class StockTradeMain {
                 
                 else if("existing".equals(input)){// Prompt user for username and password
                     String username, password;
+		    String currentDate_s="2014-12-10";
                     System.out.println("Please enter your username and password");
                     System.out.print("username: ");
                     username = scanner.nextLine();
@@ -111,9 +112,12 @@ public class StockTradeMain {
 			    System.out.println("Invalid username/password combination.");
 			    continue;
 			}
-			
-			TraderInterface ti= new TraderInterface(username, password);
-			ti.initialize();
+			int taxID=usernameCheck.getInt("taxid");
+                    	System.out.println(taxID);
+                    
+                    	TraderInterface ti= new TraderInterface(username, password, taxID ,currentDate_s);
+                    	ti.initialize();
+                    
 		    }
 		}
                     /*
