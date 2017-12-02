@@ -1,6 +1,9 @@
 import java.sql.*;
 import java.util.Scanner;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Calendar;
 
 public class TraderInterface{
     
@@ -13,17 +16,40 @@ public class TraderInterface{
     Connection connection = null;
     Connection movieconnection = null;
     Connection reviewconnection = null;
-    private String username =null;
+    private String username_s =null;
     private String password =null;
+    private int taxID =0;
+    private String date_s =null;
     
-    public TraderInterface(String user, String pass){
-        username = user;
+    public TraderInterface(String user, String pass,int tax, String day){
+        username_s = user;
         password = pass;
+        taxID = tax;
+        date_s = day;
     }
     
     public void initialize() throws SQLException {
+        
         DecimalFormat df = new DecimalFormat("#");
         df.setMaximumFractionDigits(2);
+        
+        SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd");
+        Date date=null;
+        try {
+            date = dt.parse(date_s);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        //get last month date
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.add(Calendar.MONTH, -1);
+        
+        String lastMonth_s= dt.format(cal.getTime());
+        System.out.println(lastMonth_s);
+        
+        
         System.out.println("Welcome to the System");
         
         try {
@@ -33,23 +59,22 @@ public class TraderInterface{
         }
         
         try {
-            int taxID=0;
-            int accountid=0;
+            int accountID=0;
             double balance=0;
             
             connection = DriverManager.getConnection(HOST, USER, PWD);
             
-            PreparedStatement customer = connection.prepareStatement("SELECT * FROM Customers WHERE username=username");
-            ResultSet rs = customer.executeQuery();
-            while (rs.next()){
-                taxID=rs.getInt("taxid");
-            }
-            PreparedStatement account = connection.prepareStatement("SELECT * FROM Accounts WHERE taxid= taxID");
-            rs = account.executeQuery();
-            while (rs.next()){
-                accountid=rs.getInt("accountid");
+
+            PreparedStatement account = connection.prepareStatement("SELECT * FROM Accounts WHERE taxid= ?");
+            account.setInt(1,taxID);
+            ResultSet rs = account.executeQuery();
+            
+            if(rs.first()){
+                accountID=rs.getInt("accountid");
                 balance=rs.getDouble("balance");
+                System.out.println("accountid: " +accountID+ " balance: "+balance);
             }
+            
             boolean loggedin=true;
             
             while (loggedin){
@@ -66,15 +91,18 @@ public class TraderInterface{
                     
                     //deposit
                     if(choice.equals("Deposit")||choice.equals("deposit")||choice.equals("D")||choice.equals("d")){
+                        System.out.println(taxID);
+                        System.out.println(username_s);
                         System.out.print("Enter amount to deposit:  ");
                         double amount = scan.nextDouble();
                         if(amount <= 0){
                             System.out.println("You must deposit an amount greater than 0.");
                         } else {
-                            System.out.println("You have deposited " + amount);
-                            balance= balance + amount;
-                            PreparedStatement adjustAccount = connection.prepareStatement("UPDATE Accounts SET balance=? WHERE taxid=taxID");
+                            double newBalance= balance + amount;
+                            PreparedStatement adjustAccount = connection.prepareStatement("UPDATE Accounts SET balance=? WHERE taxid=?");
                             adjustAccount.setDouble(1,balance);
+                            adjustAccount.setInt(2,taxID);
+                            
                             adjustAccount.executeUpdate();
                             System.out.println("New Balance: " + df.format(balance));
                             adjustAccount.close();
@@ -90,25 +118,90 @@ public class TraderInterface{
                             System.out.println("Not enough in balance");
                         } else{
                             balance=balance-amount;
-                            PreparedStatement adjustAccount = connection.prepareStatement("UPDATE Accounts SET balance=? WHERE taxid=taxID");
+                            PreparedStatement adjustAccount = connection.prepareStatement("UPDATE Accounts SET balance=? WHERE taxid=?");
                             adjustAccount.setDouble(1,balance);
+                            adjustAccount.setInt(2, taxID);
                             adjustAccount.executeUpdate();
                             System.out.println("New Balance: " + df.format(balance));
                             adjustAccount.close();
                             break;
                         }
                     }
-                    /*
+                    
                     // buy
                     else if(choice.equals("Buy")||choice.equals("buy")||choice.equals("B")||choice.equals("b")){
                         System.out.println("Enter stock name: ");
                         String stockID = scan.nextLine();
                         //if stockID exists
-                        //get balance
-                        //get current stock price
-                        //check if enough money
-                        System.out.println("New stock balance:");
+                        PreparedStatement stocks = connection.prepareStatement("SELECT * from Stocks WHERE stockid=?");
+                        stocks.setString(1,stockID);
+                        rs = stocks.executeQuery();
+                        double currentPrice=0;
+                        if(rs.first()){
+                            currentPrice=rs.getDouble("currentprice");
+                        }else {
+                            System.out.println("Invalid stockid");
+                            break;
+                        }
+                        
+                        System.out.println("Enter how much of this stock you want to buy: ");
+                        double quanity = scan.nextDouble();
+                        double total = currentPrice * quanity;
+                        if (total > balance){
+                            System.out.println("Not enough in balance to buy");
+                        } else{
+                            //adjust balance
+                            balance=balance-total;
+                            PreparedStatement adjustAccount = connection.prepareStatement("UPDATE Accounts SET balance=? WHERE taxid=?");
+                            adjustAccount.setDouble(1,balance);
+                            adjustAccount.setInt(2, taxID);
+                            adjustAccount.executeUpdate();
+                            System.out.println("New Balance: " + df.format(balance));
+                            adjustAccount.close();
+                            //add transaction
+                            PreparedStatement addTransaction = connection.prepareStatement("INSERT into Stocktransactions (accountid, date, type, stockid, price, qty, total) VALUES(?,?,'buy',?,?,?,?)");
+                            addTransaction.setInt(1,accountID);
+                            addTransaction.setString(2,date_s);
+                            addTransaction.setString(3,stockID);
+                            addTransaction.setDouble(4,currentPrice);
+                            addTransaction.setDouble(5,quanity);
+                            addTransaction.setDouble(6,total);
+                            addTransaction.executeUpdate();
+                            addTransaction.close();
+                            
+                            //update SharesOwned
+                            //check if stock already owned
+                            PreparedStatement ownCheck = connection.prepareStatement("SELECT * FROM SharesOwned WHERE taxid=? AND stockid=?");
+                            
+                            ownCheck.setInt(1,taxID);
+                            ownCheck.setString(2,stockID);
+                            rs = ownCheck.executeQuery();
+                            if(rs.first()){
+                                //owned so only update
+                                double sq= rs.getDouble("stockqty");
+                                sq= sq+quanity;
+                                PreparedStatement adjustOwned = connection.prepareStatement("UPDATE SharesOwned SET stockqty=? WHERE taxid=? AND stockid=?");
+                                adjustOwned.setDouble(1,sq);
+                                adjustAccount.setInt(2, taxID);
+                                adjustOwned.setString(3,stockID);
+                                adjustOwned.executeUpdate();
+                                adjustOwned.close();
+                            }else{
+                                //not owned sp add stocks into SharesOwned
+                                PreparedStatement addSharesOwned = connection.prepareStatement("INSERT into SharesOwned (taxid, stockqty, stockid) VALUES(?,?,?)");
+                                addSharesOwned.setInt(1,taxID);
+                                addSharesOwned.setDouble(2,quanity);
+                                addSharesOwned.setString(3,stockID);
+                                addSharesOwned.executeUpdate();
+                                addSharesOwned.close();
+                                
+                            }
+                            
+                        }
+                        
+                        stocks.close();
                         break;
+                        
                         
                     }
                     
@@ -122,25 +215,78 @@ public class TraderInterface{
                         System.out.println("New Stock balance:");
                         break;
                     }
-                    */
+                    
                     //get market balance
                     else if(choice.equals("Get Balance")||choice.equals("Get balance")||choice.equals("get balance")){
                         System.out.println("Balance: $" + df.format(balance));
                         break;
                     }
-                    /*
+                    
                     //get stock transaction history
                     else if(choice.equals("Get Monthly Stock Transactions")||choice.equals("Get monthly stock transactions")||choice.equals("get monthly stock transactions")){
+                        
+                        Date tempDate = date;
+                        //cal.setTime(tempDate);
+                        //cal.add(Calendar.DATE, -1);
+                        //tempDate=cal.getTime();
+                        String tempDate_s= dt.format(tempDate);
+                        
+                        System.out.println("Here are the transactions since "+ lastMonth_s);
+                        while(!tempDate_s.equals(lastMonth_s)){
+                            //debugging code
+                            //System.out.println("temp: "+ tempDate_s);
+                            PreparedStatement stocksTrans = connection.prepareStatement("SELECT * FROM Stocktransactions WHERE date=? AND accountid=accountID");
+                            stocksTrans.setString(1,tempDate_s);
+                            rs = stocksTrans.executeQuery();
+                            System.out.println(accountID);
+                            while (rs.next()){
+                                String transdate =rs.getString("date");
+                                String stock =rs.getString("stockid");
+                                String type =rs.getString("type");
+                                double price= rs.getDouble("price");
+                                double qty= rs.getDouble("qty");
+                                double total= rs.getDouble("total");
+                                System.out.println(transdate +"\t"+stock+"\t"+type+"\t$"+price+"\t"+df.format(qty)+"\tTotal:$"+ total);
+                                
+                            }
+                            cal.setTime(tempDate);
+                            cal.add(Calendar.DATE, -1);
+                            tempDate=cal.getTime();
+                            tempDate_s= dt.format(tempDate);
+                        }
                         break;
                         
                     }
                     
                     //List Current Stock Prices
                     else if(choice.equals("List Current Stock Prices")||choice.equals("List current stock prices")||choice.equals("list current stock prices")){
+                        
+                        PreparedStatement stocks = connection.prepareStatement("SELECT * FROM Stocks");
+                        rs = stocks.executeQuery();
+                        while (rs.next()){
+                            String stock =rs.getString("stockid");
+                            double currentprice=rs.getDouble("currentprice");
+                            String name =rs.getString("name");
+                            String dob =rs.getString("dob");
+                            System.out.println(stock+"\tCurrent Price: $"+ df.format(currentprice) +"\tname: "+ name+"\tDOB: "+ dob);
+                            //stock has these contracts
+                            PreparedStatement contracts = connection.prepareStatement("SELECT * FROM Contracts WHERE stockid=?");
+                            contracts.setString(1,stock);
+                            ResultSet crs = contracts.executeQuery();
+                            while (crs.next()){
+                                
+                                String movietitle =crs.getString("movietitle");
+                                String role =crs.getString("role");
+                                int year =crs.getInt("year");
+                                double value=crs.getDouble("value");
+                                System.out.println("Has movie contract with: "+ movietitle + " as a(n) " +role + " in "+ year+" for a value of: $"+  df.format(value));
+                            }
+                            
+                        }
                         break;
                         
                     }
-                    */
+                    
                     //List movie information
                     else if(choice.equals("List Movie Information")||choice.equals("List movie information")||choice.equals("list movie information")){
                         System.out.println("What movie do you need info on?: ");
@@ -155,9 +301,9 @@ public class TraderInterface{
                         else{
                             mcrs.first();
                             float rating=mcrs.getFloat("rating");
-                            System.out.println("Rating: " + rating);
+                            System.out.print("Rating: " + rating);
                             int year= mcrs.getInt("production_year");
-                            System.out.println("Year: " + year);
+                            System.out.println("\tYear: " + year);
                         }
                         break;
                         
@@ -175,15 +321,15 @@ public class TraderInterface{
                             PreparedStatement mc = movieconnection.prepareStatement("SELECT * FROM Movies WHERE production_year=? AND rating=5");
                             mc.setInt(1,startYear);
                             ResultSet mcrs = mc.executeQuery();
-
+                            
                             while(mcrs.next()){
                                 String title=mcrs.getString("title");
                                 System.out.print("Title: " + title);
                                 int year= mcrs.getInt("production_year");
-                                System.out.println("   Year: " + year);
+                                System.out.println("\tYear: " + year);
                             }
                             startYear++;
-
+                            
                         }
                         System.out.println("End of list for top moves");
                         break;
@@ -205,7 +351,7 @@ public class TraderInterface{
                         else{
                             id= mcrs.getInt("id");
                         }
-
+                        
                         reviewconnection = DriverManager.getConnection(MOVIE, USER, PWD);
                         PreparedStatement rc = reviewconnection.prepareStatement("SELECT * FROM Reviews WHERE movie_id=?");
                         rc.setInt(1,id);
@@ -213,13 +359,13 @@ public class TraderInterface{
                         while (rcrs.next()){
                             String reviewAuthor=rcrs.getString("author");
                             String reviewText=rcrs.getString("review");
-                            System.out.println("Author: " + reviewAuthor +"  Review: " + reviewText);
+                            System.out.println("Author: " + reviewAuthor +"\tReview: " + reviewText);
                             
                         }
                         
                         System.out.println("End of reviews.");
-
-
+                        
+                        
                         break;
                     }
                     
@@ -235,7 +381,7 @@ public class TraderInterface{
                     }
                 }
             }
-
+            
         }
         
         catch (SQLException e) {
@@ -253,5 +399,5 @@ public class TraderInterface{
         
     }
     
-
+    
 }
