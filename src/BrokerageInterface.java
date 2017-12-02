@@ -29,6 +29,38 @@ public class BrokerageInterface {
 	    e.printStackTrace();
 	}
 
+	boolean loggedin = true;
+	Scanner scanner = new Scanner(System.in);
+
+	while(loggedin){
+	    System.out.println("What would you like to do? (Add Interest/Generate Monthly Statement/List Active Customers/Generate DTER/Customer Report/Delete Transactions/Logout");
+	    String choice = scanner.nextLine();
+
+	    if("generate monthly statement".equals(choice)){
+		String username;
+		System.out.print("Please enter the customer's username to generate their monthly statement: ");
+		username = scanner.nextLine();
+		generateMonthlyStatement(username);
+	    }
+
+	    else if("delete transactions".equals(choice)){
+
+		System.out.println("Are you sure you want to delete ALL transactions for this month? (yes/no): ");
+		String lastchance = scanner.nextLine();
+		if("yes".equals(lastchance)){
+		    //deleteTransactions();
+		}
+		else
+		    System.out.println("Transactions for this month were NOT deleted");
+	    }
+	    
+	    if("logout".equals(choice)){
+		System.out.println("Logging out...");
+		loggedin = false;
+	    }
+	}
+
+	
 	endSession();
     }
    
@@ -50,8 +82,60 @@ public class BrokerageInterface {
     // Given a customer,  do the following for each account she/he owns:
     // generate a list of all transactions that have occurred in the current month.
     // This statement should list the name and email address of the customer.
-    public void generateMonthlyStatement(){ //(string username?)
+    public void generateMonthlyStatement(String username){ //(string username?)
+	
+	String name = "";
+	String email = "";
 
+	// See if customer exists. If yes, get the name and email address. If not, exit
+	try{
+	    PreparedStatement ps = connection.prepareStatement("SELECT * FROM Customers WHERE username=?");
+	    ps.setString(1,username);
+	    ResultSet customer = ps.executeQuery();
+	    if(!customer.first()){
+		System.out.println("Sorry, that customer does not exist");
+		return;
+	    }
+	    customer.beforeFirst();
+	    while(customer.next()){
+		name = customer.getString("name");
+		email = customer.getString("email");
+	    }
+	    
+	} catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+	// Get customer's transaction history 
+	try{
+	    PreparedStatement ps = connection.prepareStatement("SELECT * FROM Markettransactions m WHERE(SELECT a.taxid FROM Accounts a, Customers c WHERE c.username =? AND a.taxid = c.taxid AND a.accountid = m.accountid)");
+	    ps.setString(1,username);
+	    ResultSet mtrans = ps.executeQuery();
+
+	    // print it out and format it is it looks pretty
+	    System.out.println("TRANSACTION HISTORY FOR " + name + " (" + email + ")");
+	    System.out.println("Account ID |    Date    |    Type    |   Total");
+	    while(mtrans.next()){
+		int accountid = mtrans.getInt("accountid");
+		String date = mtrans.getString("date");
+		String type = mtrans.getString("type");
+		int total = mtrans.getInt("total");
+
+		
+		String accountidS = String.format("%03d",accountid);
+		accountidS = String.format("%-11s", accountidS);
+		date = String.format("%-10s",date);
+		type = String.format("%-10s",type);
+		
+		System.out.println(accountidS + "|  " + date + "|  " + type +"|  " + total);
+            }
+
+	    
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+	
     }
     
     
@@ -84,7 +168,23 @@ public class BrokerageInterface {
     }
 
     // Delete the list of transactions from each of the accounts
-    public void deleteTransactions(){
+    // Currently deletes all transactions from the system
+    public void deleteTransactions() throws SQLException {
+
+	try{
+	    System.out.println("Deleting transactions for this month...");
+            PreparedStatement ps = connection.prepareStatement("TRUNCATE Markettransactions");
+	    ps.executeUpdate();
+	} catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+	try{
+            PreparedStatement ps = connection.prepareStatement("TRUNCATE Stocktransactions");
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
     }
 }
