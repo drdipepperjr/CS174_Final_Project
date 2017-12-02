@@ -97,7 +97,7 @@ public class StockTradeMain {
                     PreparedStatement ps = connection.prepareStatement("SELECT * from Customers WHERE username=? AND password=?");
                     ps.setString(1,username);
                     ps.setString(2,password);
-                    
+
                     // check for admin (may need to add admins to the db later)
                     if("admin".equals(username) && "secret".equals(password)){
                         BrokerageInterface bi = new BrokerageInterface();
