@@ -1,15 +1,10 @@
 import java.sql.*;
 import java.util.Scanner;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 
 public class StockTradeMain {
-    public String currentDate="2014-12-1"; //default december 1st 2014
-    
-    SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd");
-    Date date = dt.parse(currentDate);
+    //public String date="01/02/2014";
     
     public static final String HOST = "jdbc:mysql://cs174a.engr.ucsb.edu:3306/domenicdipeppeDB";
     public static final String USER = "domenicdipeppe";
@@ -91,6 +86,7 @@ public class StockTradeMain {
                 
                 else if("existing".equals(input)){// Prompt user for username and password
                     String username, password;
+                    String currentDate_s="2014-12-10";
                     System.out.println("Please enter your username and password");
                     System.out.print("username: ");
                     username = scanner.nextLine();
@@ -102,78 +98,89 @@ public class StockTradeMain {
                     ps.setString(1,username);
                     ps.setString(2,password);
                     
-                    // If there is no matching entry (first() returns false) then exit program
-                    ResultSet usernameCheck = ps.executeQuery();
-                    if(!usernameCheck.first()){
-                        System.out.println("Invalid username/password combination.");
-                        continue;
+                    // check for admin (may need to add admins to the db later)
+                    if("admin".equals(username) && "secret".equals(password)){
+                        BrokerageInterface bi = new BrokerageInterface();
+                        bi.initialize();
                     }
                     
-                    TraderInterface ti= new TraderInterface(username, password);
-                    ti.initialize();
-                    
-                    /*
-                    //if username is not manager
-                    
-                    boolean loggedin=true;
-                    while (loggedin){
-                        // Menu starts from here
-                        
-                        System.out.println("Enter on of the following options:");
-                        System.out.println("[ Options: Deposit, Withdraw, Buy, Sell, Get Balence, Get Monthly Stock Transactions, Logout, List Current Stock Prices, List Movie Information, Get Top Movies, Get Reviews]");
-                        String choice = scanner.nextLine();
-                        int taxID =6660;
-                        double money=55555555;
-                        while(true){
-                            if(choice.equals("u")){
-                                int accountID=0;
-                                PreparedStatement account = connection.prepareStatement("SELECT * from Accounts WHERE taxid=taxID");
-                                ResultSet rs = account.executeQuery();
-                                while (rs.next())
-                                {
-                                    int tax = rs.getInt("taxid");
-                                    if (tax ==taxID){
-                                        accountID = rs.getInt("accountid");
-                                        System.out.println("accountid: "+ accountID);
-                                    }
-                                    
-                                }
-                                account.close();
-                                System.out.println("Updating");
-                                PreparedStatement adjustAccount = connection.prepareStatement("UPDATE Accounts SET balance=? WHERE taxid=taxID");
-                                adjustAccount.setDouble(1,money);
-                                adjustAccount.executeUpdate();
-                                adjustAccount.close();
-
-                                PreparedStatement adjustedAccount = connection.prepareStatement("SELECT * from Accounts WHERE taxid=taxID");
-                                rs = adjustedAccount.executeQuery();
-                                while (rs.next())
-                                {
-                                    
-                                    
-                                    int tax = rs.getInt("taxid");
-                                    if (tax ==taxID){
-                                        double newBal = rs.getDouble("balance");
-                                    
-                                        System.out.println("get balance");
-                                        DecimalFormat df = new DecimalFormat("#");
-                                        df.setMaximumFractionDigits(2);
-                                        System.out.println("new Bal: " +df.format(newBal));
-                                    }
-                                    
-                                }
-                                adjustedAccount.close();
-                                //ps.setInt(2,taxID);
-                                break;
-                                
-                            }
-                            if(choice.equals("q")){
-                                loggedin=false;
-                                break;
-                            }
+                    // Customer Login
+                    else{
+                        // If there is no matching entry (first() returns false) then exit program
+                        ResultSet usernameCheck = ps.executeQuery();
+                        if(!usernameCheck.first()){
+                            System.out.println("Invalid username/password combination.");
+                            continue;
                         }
-                        */
+                        int taxID=usernameCheck.getInt("taxid");
+                        System.out.println(taxID);
+                        
+                        TraderInterface ti= new TraderInterface(username, password, taxID ,currentDate_s);
+                        ti.initialize();
+                        
+                    }
                 }
+                /*
+                 //if username is not manager
+                 
+                 boolean loggedin=true;
+                 while (loggedin){
+                 // Menu starts from here
+                 
+                 System.out.println("Enter on of the following options:");
+                 System.out.println("[ Options: Deposit, Withdraw, Buy, Sell, Get Balence, Get Monthly Stock Transactions, Logout, List Current Stock Prices, List Movie Information, Get Top Movies, Get Reviews]");
+                 String choice = scanner.nextLine();
+                 int taxID =6660;
+                 double money=55555555;
+                 while(true){
+                 if(choice.equals("u")){
+                 int accountID=0;
+                 PreparedStatement account = connection.prepareStatement("SELECT * from Accounts WHERE taxid=taxID");
+                 ResultSet rs = account.executeQuery();
+                 while (rs.next())
+                 {
+                 int tax = rs.getInt("taxid");
+                 if (tax ==taxID){
+                 accountID = rs.getInt("accountid");
+                 System.out.println("accountid: "+ accountID);
+                 }
+                 
+                 }
+                 account.close();
+                 System.out.println("Updating");
+                 PreparedStatement adjustAccount = connection.prepareStatement("UPDATE Accounts SET balance=? WHERE taxid=taxID");
+                 adjustAccount.setDouble(1,money);
+                 adjustAccount.executeUpdate();
+                 adjustAccount.close();
+                 PreparedStatement adjustedAccount = connection.prepareStatement("SELECT * from Accounts WHERE taxid=taxID");
+                 rs = adjustedAccount.executeQuery();
+                 while (rs.next())
+                 {
+                 
+                 
+                 int tax = rs.getInt("taxid");
+                 if (tax ==taxID){
+                 double newBal = rs.getDouble("balance");
+                 
+                 System.out.println("get balance");
+                 DecimalFormat df = new DecimalFormat("#");
+                 df.setMaximumFractionDigits(2);
+                 System.out.println("new Bal: " +df.format(newBal));
+                 }
+                 
+                 }
+                 adjustedAccount.close();
+                 //ps.setInt(2,taxID);
+                 break;
+                 
+                 }
+                 if(choice.equals("q")){
+                 loggedin=false;
+                 break;
+                 }
+                 }
+                 */
+                
                 
                 else if("quit".equals(input)){
                     System.out.println("Bye.");
@@ -210,4 +217,3 @@ public class StockTradeMain {
         
     }
 }
-
