@@ -35,6 +35,7 @@ public class BrokerageInterface {
 	while(loggedin){
 	    System.out.println("What would you like to do? (Add Interest/Generate Monthly Statement/List Active Customers/Generate DTER/Customer Report/Delete Transactions/Logout");
 	    String choice = scanner.nextLine();
+	    choice = choice.toLowerCase();
 
 	    if("generate monthly statement".equals(choice)){
 		String username;
@@ -43,6 +44,10 @@ public class BrokerageInterface {
 		generateMonthlyStatement(username);
 	    }
 
+	    else if("list active customers".equals(choice)){
+		listActiveCustomers();
+	    }
+	    
 	    else if("delete transactions".equals(choice)){
 
 		System.out.println("Are you sure you want to delete ALL transactions for this month? (yes/no): ");
@@ -53,8 +58,10 @@ public class BrokerageInterface {
 		else
 		    System.out.println("Transactions for this month were NOT deleted");
 	    }
+
 	    
-	    if("logout".equals(choice)){
+	    
+	    else if("logout".equals(choice)){
 		System.out.println("Logging out...");
 		loggedin = false;
 	    }
@@ -106,7 +113,8 @@ public class BrokerageInterface {
             e.printStackTrace();
         }
 
-	// Get customer's transaction history 
+	// Get customer's transaction history
+	// Market transactions
 	try{
 	    PreparedStatement ps = connection.prepareStatement("SELECT * FROM Markettransactions m WHERE(SELECT a.taxid FROM Accounts a, Customers c WHERE c.username =? AND a.taxid = c.taxid AND a.accountid = m.accountid)");
 	    ps.setString(1,username);
@@ -114,6 +122,7 @@ public class BrokerageInterface {
 
 	    // print it out and format it is it looks pretty
 	    System.out.println("TRANSACTION HISTORY FOR " + name + " (" + email + ")");
+	    System.out.println("MARKET TRANSACTIONS");
 	    System.out.println("Account ID |    Date    |    Type    |   Total");
 	    while(mtrans.next()){
 		int accountid = mtrans.getInt("accountid");
@@ -135,6 +144,40 @@ public class BrokerageInterface {
             e.printStackTrace();
         }
 
+	// Stock transactions
+	try{
+            PreparedStatement ps = connection.prepareStatement("SELECT * FROM Stocktransactions m WHERE(SELECT a.taxid FROM Accounts a, Customers c WHERE c.username =? AND a.taxid = c.taxid AND a.accountid = m.accountid)");
+            ps.setString(1,username);
+            ResultSet strans = ps.executeQuery();
+
+            // print it out and format it is it looks pretty
+	    System.out.println("\nSTOCK TRANSACTIONS");
+	    System.out.println("Account ID |    Date    |    Type    |  Stock ID  |   Price   |  Quantity  |  Total ");
+
+	    while(strans.next()){
+                int accountid = strans.getInt("accountid");
+                String date = strans.getString("date");
+                String type = strans.getString("type");
+		String stockid = strans.getString("stockid");
+		int price = strans.getInt("price");
+		int qty = strans.getInt("qty");
+		int total = strans.getInt("total");
+		
+                String accountidS = String.format("%03d",accountid);
+		String priceS = String.format("%-9d",price);
+		String qtyS = String.format("%-10d",qty);
+		accountidS = String.format("%-11s", accountidS);
+                date = String.format("%-10s",date);
+                type = String.format("%-10s",type);
+		
+                System.out.println(accountidS + "|  " + date + "|  " + type +"|    " + stockid + "     | " + priceS + " | " + qtyS + " | " + total );
+            }
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
 	
     }
     
@@ -143,7 +186,7 @@ public class BrokerageInterface {
     public void listActiveCustomers() throws SQLException{
 	
 	try{
-	    PreparedStatement ps = connection.prepareStatement("SELECT * from Customers");
+	    PreparedStatement ps = connection.prepareStatement("select c.name from Customers c, Accounts a, Stocktransactions s where c.taxid = a.taxid AND a.accountid = s.accountid group by a.accountid having sum(qty) > 1000");
 	    ResultSet customers = ps.executeQuery();
 	    while(customers.next()){
 		String name = customers.getString("name");
