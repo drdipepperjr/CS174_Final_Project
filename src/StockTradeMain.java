@@ -120,66 +120,6 @@ public class StockTradeMain {
                         
                     }
                 }
-                /*
-                 //if username is not manager
-                 
-                 boolean loggedin=true;
-                 while (loggedin){
-                 // Menu starts from here
-                 
-                 System.out.println("Enter on of the following options:");
-                 System.out.println("[ Options: Deposit, Withdraw, Buy, Sell, Get Balence, Get Monthly Stock Transactions, Logout, List Current Stock Prices, List Movie Information, Get Top Movies, Get Reviews]");
-                 String choice = scanner.nextLine();
-                 int taxID =6660;
-                 double money=55555555;
-                 while(true){
-                 if(choice.equals("u")){
-                 int accountID=0;
-                 PreparedStatement account = connection.prepareStatement("SELECT * from Accounts WHERE taxid=taxID");
-                 ResultSet rs = account.executeQuery();
-                 while (rs.next())
-                 {
-                 int tax = rs.getInt("taxid");
-                 if (tax ==taxID){
-                 accountID = rs.getInt("accountid");
-                 System.out.println("accountid: "+ accountID);
-                 }
-                 
-                 }
-                 account.close();
-                 System.out.println("Updating");
-                 PreparedStatement adjustAccount = connection.prepareStatement("UPDATE Accounts SET balance=? WHERE taxid=taxID");
-                 adjustAccount.setDouble(1,money);
-                 adjustAccount.executeUpdate();
-                 adjustAccount.close();
-                 PreparedStatement adjustedAccount = connection.prepareStatement("SELECT * from Accounts WHERE taxid=taxID");
-                 rs = adjustedAccount.executeQuery();
-                 while (rs.next())
-                 {
-                 
-                 
-                 int tax = rs.getInt("taxid");
-                 if (tax ==taxID){
-                 double newBal = rs.getDouble("balance");
-                 
-                 System.out.println("get balance");
-                 DecimalFormat df = new DecimalFormat("#");
-                 df.setMaximumFractionDigits(2);
-                 System.out.println("new Bal: " +df.format(newBal));
-                 }
-                 
-                 }
-                 adjustedAccount.close();
-                 //ps.setInt(2,taxID);
-                 break;
-                 
-                 }
-                 if(choice.equals("q")){
-                 loggedin=false;
-                 break;
-                 }
-                 }
-                 */
                 
                 
                 else if("quit".equals(input)){
