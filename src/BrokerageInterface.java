@@ -15,6 +15,7 @@ public class BrokerageInterface {
     private String date_s ="2014-12-01";
     Calendar cal;
     Date date=null;
+    DecimalFormat df;
 
     public BrokerageInterface(){
 
@@ -25,6 +26,8 @@ public class BrokerageInterface {
         catch (Exception e) {
             e.printStackTrace();
 	}
+	df = new DecimalFormat("#");
+	df.setMaximumFractionDigits(2);
 	
     }
     
@@ -112,20 +115,27 @@ public class BrokerageInterface {
 	 try{
 	     System.out.println("Adding interest to all accounts...");
 	     
-	     PreparedStatement ps = connection.prepareStatement("SELECT c.username, a.accountid,a.balance FROM Customers c, Accounts a");
+	     PreparedStatement ps = connection.prepareStatement("SELECT * from Customers");
 	     ResultSet customers = ps.executeQuery();
 	     while(customers.next()){
 
 		 String username = customers.getString("username");
-		 int accountid = 0;
 		 double balance = 0;
-		 accountid = customers.getInt("accountid");
-		 balance = customers.getDouble("balance");
- 
+		 int accountid = 0;
+		 
+		 PreparedStatement ps1 = connection.prepareStatement("select a.accountid, a.balance from Customers c, Accounts a where c.username = ? AND a.taxid = c.taxid");
+		 ps1.setString(1,username);
+		 ResultSet accounts = ps1.executeQuery();
+
+		 while(accounts.next()){
+		     accountid = accounts.getInt("accountid");
+		     balance = accounts.getDouble("balance");
+		 }
+		 
 		 try {
-		     PreparedStatement ps1 = connection.prepareStatement("SELECT * FROM Markettransactions where accountid = ? ");
-		     ps1.setInt(1,accountid);
-		     ResultSet transactions = ps1.executeQuery();
+		     PreparedStatement ps2 = connection.prepareStatement("SELECT * FROM Markettransactions where accountid = ? ");
+		     ps2.setInt(1,accountid);
+		     ResultSet transactions = ps2.executeQuery();
 		     
 		     
 		     double DAB = balance;
@@ -162,7 +172,7 @@ public class BrokerageInterface {
 		     }
 
 		     DAB = DAB / (date.getDay());
-		     System.out.println(username + " DAB: " + DAB);
+		     System.out.println(username + " DAB: " + df.format(DAB));
 		 
 			   
 		 }catch (SQLException e){
