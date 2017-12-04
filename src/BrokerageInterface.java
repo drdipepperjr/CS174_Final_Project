@@ -12,27 +12,17 @@ public class BrokerageInterface {
     public static final String PWD = "907";
     
     Connection connection = null;
-    private String date_s =null;
+    private Date date_s =null;
     Calendar cal;
     SimpleDateFormat dt;
-    Date date=null;
+
     public BrokerageInterface(){
 
-	//date_s = ;
+	date_s = new Date("2014-12-10");
     }
     
     public void initialize() throws SQLException {
 	System.out.println("Welcome to the System, John Admin");
-
-	dt = new SimpleDateFormat("yyyy-MM-dd");
-        try {
-            date = dt.parse(date_s);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        //get last month date
-        cal = Calendar.getInstance();
 	
 	try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -57,7 +47,7 @@ public class BrokerageInterface {
 	    choice = choice.toLowerCase();
 
 	    if("add insterest".equals(choice) || "ai".equals(choice)){
-		System.out.println("Adding interest for all accounts");
+		System.out.println("Adding interest to all accounts");
 	    }
 	    
 	    if("monthly statement".equals(choice) || "ms".equals(choice)){
@@ -89,8 +79,6 @@ public class BrokerageInterface {
 		else
 		    System.out.println("Transactions for this month were NOT deleted");
 	    }
-
-	    
 	    
 	    else if("logout".equals(choice)){
 		System.out.println("Logging out...");
@@ -115,12 +103,68 @@ public class BrokerageInterface {
     // For all market accounts, add the appropriate amount of monthly interest to the balance
     public void addInterest(){
 
-    }
+	 try{
+	     System.out.println("Adding interest to all accounts...");
+	     PreparedStatement ps = connection.prepareStatement("SELECT * FROM Customers");
+	     ResultSet customers = ps.executeQuery();
+	     while(customers.next()){
+ 
+		 // Get dates and balances of market and stock transactions
+		 // int oldBalance = balance - total;
+		 // DAB += oldBalance * (newDate - oldDate)  //something something while(newDate != oldDate);
+		 // oldDate = newdate
+		 // DAB += (# of days in month - oldDate) * current balance;
+		 
+		 // Need to add a "sell" and "buy" transactions to Markettransactions table.
+		 // Need to find out what the balance was at the and of the day
+		 try {
+		     PreparedStatement ps1 = connection.prepareStatement("SELECT * FROM Markettransactions");
+		     ResultSet transactions = ps1.executeQuery();
 
+		     double DAB = 0;
+		     int oldDate = date_s.getDate();
+		     double balance = customers.getDouble("balance");
+		     
+		     transactions.last();
+		     while(transactions.previous()){
+			 
+			 String transdate = transactions.getString("date");
+			 Date transDate = new Date(transdate);
+			 int newDate = transDate.getDay();     
+			 double total  = transactions.getDouble("total");
+			 String type = transactions.getString("type");
+			 if(type.equals("withdraw") || type.equals("buy")){
+			     total *= -1;
+			 }
+			 
+			 if(newDate != oldDate){
+			     DAB += (oldDate - newDate) * balance;
+			     oldDate = newDate;
+			 }
+
+			 balance = balance + total;
+			 
+		     }
+
+		     DAB = DAB / (date_s.getDay());
+		     System.out.println("DAB: " + DAB);
+			   
+		 }catch (SQLException e){
+		     e.printStackTrace();
+		 }
+		 
+	     }
+
+	 }catch (SQLException e){
+            e.printStackTrace();
+	 }
+	 
+    }
+    
     // Given a customer,  do the following for each account she/he owns:
     // generate a list of all transactions that have occurred in the current month.
     // This statement should list the name and email address of the customer.
-    public void generateMonthlyStatement(String username){ //(string username?)
+    public void generateMonthlyStatement(String username) throws SQLException{ //(string username?)
 	
 	String name = "";
 	String email = "";
@@ -233,6 +277,8 @@ public class BrokerageInterface {
     // The residence state of each customer should also be listed.
     public void generateDTER(){
 
+	// only need to count selling and interest
+	
     }
 
     // Generate a list of all accounts associated with a particular customer and the current balance.
