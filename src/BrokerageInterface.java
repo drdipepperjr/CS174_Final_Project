@@ -1,5 +1,7 @@
 import java.sql.*;
 import java.util.Scanner;
+import java.util.Date;
+import java.util.Calendar;
 
 public class BrokerageInterface {
 
@@ -8,18 +10,13 @@ public class BrokerageInterface {
     public static final String PWD = "907";
     
     Connection connection = null;
-<<<<<<< HEAD
     private Date date_s =null;
     Calendar cal;
-    SimpleDateFormat dt;
 
     public BrokerageInterface(){
 
 	date_s = new Date("2014-12-10");
-=======
-    
-    public BrokerageInterface(){
->>>>>>> 432a3b85cd976bb95f31d6f5218bbce7027a7dfc
+	
     }
     
     public void initialize() throws SQLException {
@@ -47,20 +44,23 @@ public class BrokerageInterface {
 	    String choice = scanner.nextLine();
 	    choice = choice.toLowerCase();
 
-<<<<<<< HEAD
-	    if("add insterest".equals(choice) || "ai".equals(choice)){
+	    if("add interest".equals(choice) || "ai".equals(choice)){
 		System.out.println("Adding interest to all accounts");
 	    }
 	    
-	    if("monthly statement".equals(choice) || "ms".equals(choice)){
-=======
-	    if("generate monthly statement".equals(choice)){
->>>>>>> 432a3b85cd976bb95f31d6f5218bbce7027a7dfc
+	    else if("monthly statement".equals(choice) || "ms".equals(choice)){
 		String username;
 		System.out.print("Please enter the customer's username to generate their monthly statement: ");
 		username = scanner.nextLine();
 		generateMonthlyStatement(username);
 	    }
+
+	    else if("customer report".equals(choice) || "cr".equals(choice)){
+                String username;
+                System.out.print("Please enter the customer's username to generate their report: ");
+                username = scanner.nextLine();
+                customerReport(username);
+}
 
 	    else if("list active customers".equals(choice)){
 		listActiveCustomers();
@@ -280,14 +280,81 @@ public class BrokerageInterface {
     }
 
     // Generate a list of all accounts associated with a particular customer and the current balance.
-    public void customerReport(){
+    public void customerReport(String username) throws SQLException{
+	String name = "";
+	String email = "";
+	
+	try{
+            PreparedStatement ps = connection.prepareStatement("SELECT * FROM Customers WHERE username=?");
+            ps.setString(1,username);
+            ResultSet customer = ps.executeQuery();
+            if(!customer.first()){
+                System.out.println("Sorry, that customer does not exist");
+                return;
+            }
+	    
+	    customer.beforeFirst();
+            while(customer.next()){
+                name = customer.getString("name");
+                email = customer.getString("email");
+            }
+	    
+	} catch (SQLException e) {
+	    e.printStackTrace();
+	}
+	
+	try{
+            PreparedStatement ps = connection.prepareStatement("Select a.accountid,a.balance from Customers c, Accounts a where c.username=? AND a.taxid = c.taxid");
+	    ps.setString(1,username);
+	    ResultSet abalance = ps.executeQuery();
+	    
+	    System.out.println("Customer Report for " + name + " (" + email + ")\n");
+	    System.out.println("Account ID |   Type   |  Balance");
+	    while(abalance.next()){
+		int aid = abalance.getInt("accountid");
+		String balance = ""+abalance.getInt("balance");
+		String aidS= String.format("%03d",aid);
+		aidS = String.format("%-11s", aidS);
+		String type = " Market ";
+		System.out.println(aidS + "| " + type + " | $" + balance);
+	    }
+	    
+	} catch (SQLException e) {
+            e.printStackTrace();
+        }
+	
+	
+	try{
+	    
+	    PreparedStatement ps = connection.prepareStatement("Select s.stockqty,s.stockid from SharesOwned s, Customers c where c.username =? AND s.taxid = c.taxid");
+	    ps.setString(1,username);
+	    ResultSet stocks = ps.executeQuery();
+	    
+	    //int aid = stocks.getInt("accountid");
+	    //String aidS= String.format("%03d",aid);
+	    //aidS = String.format("%-11s", aidS);
+	    //String type = "  Stock   ";
+	    
+	    while(stocks.next()){
+		
+		String qty = ""+stocks.getInt("stockqty");
+		String stockid = stocks.getString("stockid");
+		System.out.print("("+stockid + "," + qty + ")");
+		
+	    }
+	    System.out.println("");
+	    
+	} catch (SQLException e) {
+            e.printStackTrace();
+        }
+	
 	
     }
 
     // Delete the list of transactions from each of the accounts
     // Currently deletes all transactions from the system
     public void deleteTransactions() throws SQLException {
-
+	
 	try{
 	    System.out.println("Deleting transactions for this month...");
             PreparedStatement ps = connection.prepareStatement("TRUNCATE Markettransactions");
