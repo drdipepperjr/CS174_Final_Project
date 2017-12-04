@@ -54,7 +54,7 @@ public class BrokerageInterface {
 	    choice = choice.toLowerCase();
 
 	    if("add interest".equals(choice) || "ai".equals(choice)){
-		System.out.println("Adding interest to all accounts");
+		addInterest();
 	    }
 	    
 	    else if("monthly statement".equals(choice) || "ms".equals(choice)){
@@ -111,34 +111,41 @@ public class BrokerageInterface {
 
 	 try{
 	     System.out.println("Adding interest to all accounts...");
-	     PreparedStatement ps = connection.prepareStatement("SELECT * FROM Customers");
+	     
+	     PreparedStatement ps = connection.prepareStatement("SELECT c.username, a.accountid,a.balance FROM Customers c, Accounts a");
 	     ResultSet customers = ps.executeQuery();
 	     while(customers.next()){
+
+		 String username = customers.getString("username");
+		 int accountid = 0;
+		 double balance = 0;
+		 accountid = customers.getInt("accountid");
+		 balance = customers.getDouble("balance");
  
-		 // Get dates and balances of market and stock transactions
-		 // int oldBalance = balance - total;
-		 // DAB += oldBalance * (newDate - oldDate)  //something something while(newDate != oldDate);
-		 // oldDate = newdate
-		 // DAB += (# of days in month - oldDate) * current balance;
-		 
-		 // Need to add a "sell" and "buy" transactions to Markettransactions table.
-		 // Need to find out what the balance was at the and of the day
 		 try {
-		     PreparedStatement ps1 = connection.prepareStatement("SELECT * FROM Markettransactions");
+		     PreparedStatement ps1 = connection.prepareStatement("SELECT * FROM Markettransactions where accountid = ? ");
+		     ps1.setInt(1,accountid);
 		     ResultSet transactions = ps1.executeQuery();
-
-		     double DAB = 0;
+		     
+		     
+		     double DAB = balance;
 		     int oldDate = date.getDay();
-		     double balance = customers.getDouble("balance");
-
 		     
 		     transactions.last();
 		     while(transactions.previous()){
 
 			 
 			 String transdate = transactions.getString("date");
-			 Date transDate = new Date(transdate);
-			 int newDate = transDate.getDay();     
+			 Date transDate = null;
+			 SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd");
+			 try {
+			     transDate = dt.parse(transdate);
+			 }
+			 catch (Exception e) {
+			     e.printStackTrace();
+			 }
+			 
+			 int newDate = transDate.getDay();   
 			 double total  = transactions.getDouble("total");
 			 String type = transactions.getString("type");
 			 if(type.equals("withdraw") || type.equals("buy")){
@@ -155,7 +162,8 @@ public class BrokerageInterface {
 		     }
 
 		     DAB = DAB / (date.getDay());
-		     System.out.println("DAB: " + DAB);
+		     System.out.println(username + " DAB: " + DAB);
+		 
 			   
 		 }catch (SQLException e){
 		     e.printStackTrace();
