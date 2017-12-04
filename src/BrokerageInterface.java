@@ -2,6 +2,8 @@ import java.sql.*;
 import java.util.Scanner;
 import java.util.Date;
 import java.util.Calendar;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 
 public class BrokerageInterface {
 
@@ -10,12 +12,19 @@ public class BrokerageInterface {
     public static final String PWD = "907";
     
     Connection connection = null;
-    private Date date_s =null;
+    private String date_s ="2014-12-01";
     Calendar cal;
+    Date date=null;
 
     public BrokerageInterface(){
 
-	date_s = new Date("2014-12-10");
+	SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            date = dt.parse(date_s);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+	}
 	
     }
     
@@ -119,11 +128,13 @@ public class BrokerageInterface {
 		     ResultSet transactions = ps1.executeQuery();
 
 		     double DAB = 0;
-		     int oldDate = date_s.getDate();
+		     int oldDate = date.getDay();
 		     double balance = customers.getDouble("balance");
+
 		     
 		     transactions.last();
 		     while(transactions.previous()){
+
 			 
 			 String transdate = transactions.getString("date");
 			 Date transDate = new Date(transdate);
@@ -143,7 +154,7 @@ public class BrokerageInterface {
 			 
 		     }
 
-		     DAB = DAB / (date_s.getDay());
+		     DAB = DAB / (date.getDay());
 		     System.out.println("DAB: " + DAB);
 			   
 		 }catch (SQLException e){
