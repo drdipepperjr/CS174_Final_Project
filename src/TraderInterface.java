@@ -185,6 +185,15 @@ public class TraderInterface{
                             addTransaction.executeUpdate();
                             addTransaction.close();
                             
+                            PreparedStatement addMTransaction = connection.prepareStatement("INSERT into Markettransactions (accountid, date, type, total) VALUES(?,?,'buy',?)");
+                            addMTransaction.setInt(1,accountID);
+                            addMTransaction.setString(2,date_s);
+                            addMTransaction.setDouble(3,total);
+                            addMTransaction.executeUpdate();
+                            addMTransaction.close();
+                            break;
+
+                            
                             //update SharesOwned
                             //check if stock already owned
                             PreparedStatement ownCheck = connection.prepareStatement("SELECT * FROM SharesOwned WHERE taxid=? AND stockid=?");
@@ -280,6 +289,14 @@ public class TraderInterface{
                                 addTransaction.setDouble(6,total);
                                 addTransaction.executeUpdate();
                                 addTransaction.close();
+                                
+                                PreparedStatement addMTransaction = connection.prepareStatement("INSERT into Markettransactions (accountid, date, type, total) VALUES(?,?,'sell',?)");
+                                addMTransaction.setInt(1,accountID);
+                                addMTransaction.setString(2,date_s);
+                                addMTransaction.setDouble(3,total);
+                                addMTransaction.executeUpdate();
+                                addMTransaction.close();
+                                break;
                                 
                             }else{
                                 System.out.println("You don't own enough this stock");
