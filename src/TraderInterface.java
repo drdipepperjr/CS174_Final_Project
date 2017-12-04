@@ -93,6 +93,7 @@ public class TraderInterface{
                     if(choice.equals("Deposit")||choice.equals("deposit")||choice.equals("D")||choice.equals("d")){
                         System.out.println(taxID);
                         System.out.println(username_s);
+                        System.out.println(accountID);
                         System.out.print("Enter amount to deposit:  ");
                         double amount = scan.nextDouble();
                         if(amount <= 0){
@@ -106,6 +107,13 @@ public class TraderInterface{
                             adjustAccount.executeUpdate();
                             System.out.println("New Balance: " + df.format(balance));
                             adjustAccount.close();
+                            
+                            PreparedStatement addTransaction = connection.prepareStatement("INSERT into Markettransactions (accountid, date, type, total) VALUES(?,?,'deposit',?)");
+                            addTransaction.setInt(1,accountID);
+                            addTransaction.setString(2,date_s);
+                            addTransaction.setDouble(3,amount);
+                            addTransaction.executeUpdate();
+                            addTransaction.close();
                             break;
                         }
                     }
@@ -124,6 +132,14 @@ public class TraderInterface{
                             adjustAccount.executeUpdate();
                             System.out.println("New Balance: " + df.format(balance));
                             adjustAccount.close();
+                            
+                            PreparedStatement addTransaction = connection.prepareStatement("INSERT into Markettransactions (accountid, date, type, total) VALUES(?,?,'withdraw',?)");
+                            addTransaction.setInt(1,accountID);
+                            addTransaction.setString(2,date_s);
+                            addTransaction.setDouble(3,amount);
+                            addTransaction.executeUpdate();
+                            addTransaction.close();
+                            
                             break;
                         }
                     }
