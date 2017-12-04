@@ -1,5 +1,9 @@
 import java.sql.*;
 import java.util.Scanner;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Calendar;
 
 public class BrokerageInterface {
 
@@ -8,12 +12,27 @@ public class BrokerageInterface {
     public static final String PWD = "907";
     
     Connection connection = null;
-    
+    private String date_s =null;
+    Calendar cal;
+    SimpleDateFormat dt;
+    Date date=null;
     public BrokerageInterface(){
+
+	//date_s = ;
     }
     
     public void initialize() throws SQLException {
 	System.out.println("Welcome to the System, John Admin");
+
+	dt = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            date = dt.parse(date_s);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        //get last month date
+        cal = Calendar.getInstance();
 	
 	try {
             Class.forName("com.mysql.jdbc.Driver");
