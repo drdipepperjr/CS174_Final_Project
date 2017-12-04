@@ -191,8 +191,6 @@ public class TraderInterface{
                             addMTransaction.setDouble(3,total);
                             addMTransaction.executeUpdate();
                             addMTransaction.close();
-                            break;
-
                             
                             //update SharesOwned
                             //check if stock already owned
@@ -296,7 +294,6 @@ public class TraderInterface{
                                 addMTransaction.setDouble(3,total);
                                 addMTransaction.executeUpdate();
                                 addMTransaction.close();
-                                break;
                                 
                             }else{
                                 System.out.println("You don't own enough this stock");
