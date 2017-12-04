@@ -85,7 +85,7 @@ public class TraderInterface{
                 System.out.println("Enter on of the following options:");
                 System.out.println("[ Options: Deposit, Withdraw, Buy, Sell, Get Balance, Get Monthly Stock Transactions, Logout, List Current Stock Prices, List Movie Information, Get Top Movies, Get Reviews]");
                 String choice = scan.nextLine();
-                choice.toLowerCase();
+                choice = choice.toLowerCase();
 
                 
                 //Options
@@ -150,7 +150,7 @@ public class TraderInterface{
                     else if(choice.equals("buy")||choice.equals("b")){
                         System.out.println("Enter stock name: ");
                         String stockID = scan.nextLine();
-                        stockID.toUpperCase();
+                        stockID = stockID.toUpperCase();
                         
                         //if stockID exists
                         PreparedStatement stocks = connection.prepareStatement("SELECT * from Stocks WHERE stockid=?");
@@ -235,7 +235,7 @@ public class TraderInterface{
                     else if(choice.equals("sell")||choice.equals("s")){
                         System.out.println("Enter stock name: ");
                         String stockID = scan.nextLine();
-                        stockID.toUpperCase();
+                        stockID = stockID.toUpperCase();
                         
                         System.out.println("Enter stock amount: ");
                         double stockam = scan.nextDouble();
