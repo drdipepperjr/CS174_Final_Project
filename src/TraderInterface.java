@@ -97,7 +97,14 @@ public class TraderInterface{
                         System.out.println(username_s);
                         System.out.println(accountID);
                         System.out.print("Enter amount to deposit:  ");
-                        double amount = scan.nextDouble();
+                        double amount = 0;
+                        try{
+                            amount = scan.nextDouble();
+                        }catch(Exception e){
+                            System.out.println("Not a matching value");
+                            break;
+                        }
+                        
                         if(amount <= 0){
                             System.out.println("You must deposit an amount greater than 0.");
                         } else {
@@ -123,7 +130,13 @@ public class TraderInterface{
                     // withdraw
                     else if(choice.equals("withdraw")||choice.equals("w")){
                         System.out.print("Enter amount to be withdrawn: ");
-                        double amount = scan.nextDouble();
+                        double amount = 0;
+                        try{
+                            amount = scan.nextDouble();
+                        }catch(Exception e){
+                            System.out.println("Not a matching value");
+                            break;
+                        }
                         if (amount > balance){
                             System.out.println("Not enough in balance");
                         } else{
@@ -165,7 +178,13 @@ public class TraderInterface{
                         }
                         
                         System.out.println("Enter how much of this stock you want to buy: ");
-                        double quanity = scan.nextDouble();
+                        double quanity=0;
+                        try{
+                            quanity = scan.nextDouble();
+                        }catch(Exception e){
+                            System.out.println("Not a matching value");
+                            break;
+                        }
                         double total = currentPrice * quanity;
                         if (total > balance){
                             System.out.println("Not enough in balance to buy");
@@ -238,7 +257,13 @@ public class TraderInterface{
                         stockID = stockID.toUpperCase();
                         
                         System.out.println("Enter stock amount: ");
-                        double stockam = scan.nextDouble();
+                        double stockam = 0;
+                        try{
+                            stockam = scan.nextDouble();
+                        }catch(Exception e){
+                            System.out.println("Not a matching value");
+                            break;
+                        }
                         
 
                         //if stockID exists
@@ -320,7 +345,7 @@ public class TraderInterface{
                     }
                     
                     //get stock transaction history
-                    else if(choice.equals(choice.equals("get monthly stock transactions"))){
+                    else if(choice.equals("get monthly stock transactions")){
                         
                         Date tempDate = date;
 
@@ -330,8 +355,9 @@ public class TraderInterface{
                         while(!tempDate_s.equals(lastMonth_s)){
                             //debugging code
                             //System.out.println("temp: "+ tempDate_s);
-                            PreparedStatement stocksTrans = connection.prepareStatement("SELECT * FROM Stocktransactions WHERE date=? AND accountid=accountID");
+                            PreparedStatement stocksTrans = connection.prepareStatement("SELECT * FROM Stocktransactions WHERE date=? AND accountid=?");
                             stocksTrans.setString(1,tempDate_s);
+                            stocksTrans.setInt(2,accountID);
                             rs = stocksTrans.executeQuery();
                             //System.out.println(accountID);
                             while (rs.next()){
@@ -341,7 +367,7 @@ public class TraderInterface{
                                 double price= rs.getDouble("price");
                                 double qty= rs.getDouble("qty");
                                 double total= rs.getDouble("total");
-                                System.out.println(transdate +"\t"+stock+"\t"+type+"\t$"+price+"\t"+df.format(qty)+"\tTotal:$"+ total);
+                                System.out.println(transdate +"\t"+stock+"\t"+type+"\t$"+price+"\tStock Quantity: "+df.format(qty)+"\tTotal:$"+ total);
                                 
                             }
                             cal.setTime(tempDate);
@@ -354,7 +380,7 @@ public class TraderInterface{
                     }
                     
                     //List Current Stock Prices
-                    else if(choice.equals(choice.equals("list current stock prices"))){
+                    else if(choice.equals("list current stock prices")){
                         
                         PreparedStatement stocks = connection.prepareStatement("SELECT * FROM Stocks");
                         rs = stocks.executeQuery();
@@ -383,7 +409,7 @@ public class TraderInterface{
                     }
                     
                     //List movie information
-                    else if(choice.equals(choice.equals("list movie information"))){
+                    else if(choice.equals("list movie information")){
                         System.out.println("What movie do you need info on?: ");
                         String movietitle = scan.nextLine();
                         movieconnection = DriverManager.getConnection(MOVIE, USER, PWD);
