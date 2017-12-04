@@ -196,8 +196,11 @@ public class TraderInterface{
                             addMTransaction.executeUpdate();
                             addMTransaction.close();
                             
+<<<<<<< HEAD
 
                             
+=======
+>>>>>>> 0ad18c152efe2f84390b1c86869a26ec088c6e91
                             //update SharesOwned
                             //check if stock already owned
                             PreparedStatement ownCheck = connection.prepareStatement("SELECT * FROM SharesOwned WHERE taxid=? AND stockid=?");
