@@ -86,7 +86,7 @@ public class StockTradeMain {
                 
                 else if("existing".equals(input)){// Prompt user for username and password
                     String username, password;
-                    String currentDate_s="2014-12-10";
+                    String currentDate_s="2014-12-01";
                     System.out.println("Please enter your username and password");
                     System.out.print("username: ");
                     username = scanner.nextLine();

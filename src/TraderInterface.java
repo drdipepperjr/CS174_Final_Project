@@ -85,12 +85,14 @@ public class TraderInterface{
                 System.out.println("Enter on of the following options:");
                 System.out.println("[ Options: Deposit, Withdraw, Buy, Sell, Get Balance, Get Monthly Stock Transactions, Logout, List Current Stock Prices, List Movie Information, Get Top Movies, Get Reviews]");
                 String choice = scan.nextLine();
+                choice = choice.toLowerCase();
+
                 
                 //Options
                 while(true){
                     
                     //deposit
-                    if(choice.equals("Deposit")||choice.equals("deposit")||choice.equals("D")||choice.equals("d")){
+                    if(choice.equals("deposit")||choice.equals("d")){
                         System.out.println(taxID);
                         System.out.println(username_s);
                         System.out.println(accountID);
@@ -119,7 +121,7 @@ public class TraderInterface{
                     }
                     
                     // withdraw
-                    else if(choice.equals("Withdraw")||choice.equals("withdraw")||choice.equals("W")||choice.equals("w")){
+                    else if(choice.equals("withdraw")||choice.equals("w")){
                         System.out.print("Enter amount to be withdrawn: ");
                         double amount = scan.nextDouble();
                         if (amount > balance){
@@ -145,9 +147,11 @@ public class TraderInterface{
                     }
                     
                     // buy
-                    else if(choice.equals("Buy")||choice.equals("buy")||choice.equals("B")||choice.equals("b")){
+                    else if(choice.equals("buy")||choice.equals("b")){
                         System.out.println("Enter stock name: ");
                         String stockID = scan.nextLine();
+                        stockID = stockID.toUpperCase();
+                        
                         //if stockID exists
                         PreparedStatement stocks = connection.prepareStatement("SELECT * from Stocks WHERE stockid=?");
                         stocks.setString(1,stockID);
@@ -191,8 +195,6 @@ public class TraderInterface{
                             addMTransaction.setDouble(3,total);
                             addMTransaction.executeUpdate();
                             addMTransaction.close();
-                            break;
-
                             
                             //update SharesOwned
                             //check if stock already owned
@@ -230,9 +232,10 @@ public class TraderInterface{
                     }
                     
                     // sell
-                    else if(choice.equals("Sell")||choice.equals("sell")||choice.equals("S")||choice.equals("s")){
+                    else if(choice.equals("sell")||choice.equals("s")){
                         System.out.println("Enter stock name: ");
                         String stockID = scan.nextLine();
+                        stockID = stockID.toUpperCase();
                         
                         System.out.println("Enter stock amount: ");
                         double stockam = scan.nextDouble();
@@ -296,7 +299,6 @@ public class TraderInterface{
                                 addMTransaction.setDouble(3,total);
                                 addMTransaction.executeUpdate();
                                 addMTransaction.close();
-                                break;
                                 
                             }else{
                                 System.out.println("You don't own enough this stock");
@@ -307,20 +309,18 @@ public class TraderInterface{
                             System.out.println("You don't own this stock");
                             break;
                         }
-                        
-                        //get balance
-                        //get current stock price
+
                         break;
                     }
                     
                     //get market balance
-                    else if(choice.equals("Get Balance")||choice.equals("Get balance")||choice.equals("get balance")){
+                    else if(choice.equals("get balance")){
                         System.out.println("Balance: $" + df.format(balance));
                         break;
                     }
                     
                     //get stock transaction history
-                    else if(choice.equals("Get Monthly Stock Transactions")||choice.equals("Get monthly stock transactions")||choice.equals("get monthly stock transactions")){
+                    else if(choice.equals(choice.equals("get monthly stock transactions"))){
                         
                         Date tempDate = date;
 
@@ -354,7 +354,7 @@ public class TraderInterface{
                     }
                     
                     //List Current Stock Prices
-                    else if(choice.equals("List Current Stock Prices")||choice.equals("List current stock prices")||choice.equals("list current stock prices")){
+                    else if(choice.equals(choice.equals("list current stock prices"))){
                         
                         PreparedStatement stocks = connection.prepareStatement("SELECT * FROM Stocks");
                         rs = stocks.executeQuery();
@@ -383,7 +383,7 @@ public class TraderInterface{
                     }
                     
                     //List movie information
-                    else if(choice.equals("List Movie Information")||choice.equals("List movie information")||choice.equals("list movie information")){
+                    else if(choice.equals(choice.equals("list movie information"))){
                         System.out.println("What movie do you need info on?: ");
                         String movietitle = scan.nextLine();
                         movieconnection = DriverManager.getConnection(MOVIE, USER, PWD);
@@ -405,7 +405,7 @@ public class TraderInterface{
                     }
                     
                     //Get Top movies
-                    else if(choice.equals("Get Top Movies")||choice.equals("Get top movies")||choice.equals("get top movies")){
+                    else if(choice.equals("get top movies")){
                         System.out.println("Starting from what year: ");
                         int startYear = scan.nextInt();
                         System.out.println("To what year: ");
@@ -432,7 +432,7 @@ public class TraderInterface{
                     }
                     
                     //Get Reviews
-                    else if(choice.equals("Get Reviews")||choice.equals("Get reviews")||choice.equals("get reviews")){
+                    else if(choice.equals("get reviews")){
                         System.out.println("What movie do you want reviews for?: ");
                         String movietitle = scan.nextLine();
                         movieconnection = DriverManager.getConnection(MOVIE, USER, PWD);
@@ -466,7 +466,7 @@ public class TraderInterface{
                     
                     
                     //logout
-                    else if(choice.equals("Logout")||choice.equals("logout")){
+                    else if(choice.equals("logout")){
                         loggedin=false;
                         break;
                     }
