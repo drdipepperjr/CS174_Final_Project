@@ -62,6 +62,8 @@ public class BrokerageInterface {
 		    e.printStackTrace();
 		}
 	    }
+	    ps.close();
+	    
 	} catch (Exception e) {
 	    e.printStackTrace();
 	}
@@ -100,7 +102,7 @@ public class BrokerageInterface {
                 customerReport(username);
 	    }
 	    
-	    else if("list active customers".equals(choice)){
+	    else if("list active customers".equals(choice) || "lac".equals(choice)){
 		listActiveCustomers();
 	    }
 
@@ -137,6 +139,7 @@ public class BrokerageInterface {
 			ps.executeUpdate();
 			System.out.println("The market is now open.");
 			isOpen = "yes";
+			ps.close();
 		    } catch (SQLException e){
 			e.printStackTrace();
 		    }
@@ -156,6 +159,7 @@ public class BrokerageInterface {
 			ps.executeUpdate();
 			System.out.println("The market is now closed.");
 			isOpen = "no";
+			ps.close();
 		    } catch (SQLException e){
 			e.printStackTrace();
 		    }
@@ -173,6 +177,7 @@ public class BrokerageInterface {
 		    ps.setString(1,newDate);
 		    ps.executeUpdate();
 		    System.out.println("Date changed to   " + newDate);
+		    ps.close();
 		    
 		} catch (SQLException e){
 		    e.printStackTrace();
@@ -194,7 +199,9 @@ public class BrokerageInterface {
 			ps.setString(1,stockid);
 			ps.setDouble(2,price);
 		    	ps.setString(3,stockid);
-			ps.executeUpdate();						   
+			ps.executeUpdate();
+			ps.close();
+			
 	        } catch (SQLException e){
 			e.printStackTrace();
 		}
@@ -222,6 +229,8 @@ public class BrokerageInterface {
 		    ps.setString(3,dob);
 		    ps.setString(4,name);
 		    ps.executeUpdate();
+		    ps.close();
+		    
 		} catch(SQLException e){
 		    e.printStackTrace();
 		}
@@ -239,53 +248,60 @@ public class BrokerageInterface {
 		newusername = scanner.nextLine();
                 
 		// Check DB for existing user
-		PreparedStatement ps = connection.prepareStatement("SELECT * from Employees WHERE username=?");
-		ps.setString(1,newusername);
-		ResultSet existinguser = ps.executeQuery();
-		if(!existinguser.first()){
-		    String name, address, state, phone, email, SSN;
-		    int taxid;
-                    
-		    // Ask user for personal info
-		    System.out.print("Please enter the password: ");
-		    newpassword = scanner.nextLine();
-		    System.out.print("Please enter their name: ");
-		    name = scanner.nextLine();
-		    System.out.print("Please enter their address: ");
-		    address = scanner.nextLine();
-		    System.out.print("Please enter their state they live in (2 character state code): ");
-		    state = scanner.nextLine();
-		    System.out.print("Please enter their phone number ( (xxx)xxxxxxx ): ");
-		    phone = scanner.nextLine();
-		    System.out.print("Please enter their email: ");
-		    email = scanner.nextLine();
-		    System.out.print("Please enter their Tax Identification Number (4 digits): ");
-		    taxid = scanner.nextInt();
-		    scanner.nextLine();
-		    System.out.print("Please enter their Social Security Number (xxx-xx-xxxx): ");
-		    SSN = scanner.nextLine();
-                    
-		    // Insert values into the DB
-		    ps = connection.prepareStatement("INSERT into Employees (name, username, password, address, state, phone, email, taxid, SSN) VALUES(?,?,?,?,?,?,?,?,?)");
-		    ps.setString(1,name);
-		    ps.setString(2,newusername);
-		    ps.setString(3,newpassword);
-		    ps.setString(4,address);
-		    ps.setString(5,state);
-		    ps.setString(6,phone);
-		    ps.setString(7,email);
-		    ps.setInt(8,taxid);
-		    ps.setString(9,SSN);
-		    ps.executeUpdate();
+		try{
+		    PreparedStatement ps = connection.prepareStatement("SELECT * from Employees WHERE username=?");
+		    ps.setString(1,newusername);
+		    ResultSet existinguser = ps.executeQuery();
+		    if(!existinguser.first()){
+			String name, address, state, phone, email, SSN;
+			int taxid;
+			
+			// Ask user for personal info
+			System.out.print("Please enter the password: ");
+			newpassword = scanner.nextLine();
+			System.out.print("Please enter their name: ");
+			name = scanner.nextLine();
+			System.out.print("Please enter their address: ");
+			address = scanner.nextLine();
+			System.out.print("Please enter their state they live in (2 character state code): ");
+			state = scanner.nextLine();
+			System.out.print("Please enter their phone number ( (xxx)xxxxxxx ): ");
+			phone = scanner.nextLine();
+			System.out.print("Please enter their email: ");
+			email = scanner.nextLine();
+			System.out.print("Please enter their Tax Identification Number (4 digits): ");
+			taxid = scanner.nextInt();
+			scanner.nextLine();
+			System.out.print("Please enter their Social Security Number (xxx-xx-xxxx): ");
+			SSN = scanner.nextLine();
+			
+			// Insert values into the DB
+			ps = connection.prepareStatement("INSERT into Employees (name, username, password, address, state, phone, email, taxid, SSN) VALUES(?,?,?,?,?,?,?,?,?)");
+			ps.setString(1,name);
+			ps.setString(2,newusername);
+			ps.setString(3,newpassword);
+			ps.setString(4,address);
+			ps.setString(5,state);
+			ps.setString(6,phone);
+			ps.setString(7,email);
+			ps.setInt(8,taxid);
+			ps.setString(9,SSN);
+			ps.executeUpdate();
+			ps.close();
+			
+			System.out.println("The new employee has been added");
+			
+		    }
+
+		    else{
+			System.out.println("Sorry, username is already taken. Please enter a unique username");
+		    }
 		    
-		    System.out.println("The new employee has been added");
+		} catch(SQLException e){
+		    e.printStackTrace();
 		}
 		
-		
-		else
-		    System.out.println("Sorry, username is already taken. Please enter a unique username");
 	    }
-	    
 	    
 	    else{
 		System.out.println("Sorry, that was not a valid option.");
@@ -308,108 +324,116 @@ public class BrokerageInterface {
 
     // For all market accounts, add the appropriate amount of monthly interest to the balance
     public void addInterest(){
-	 try{
-	     System.out.println("Adding interest to all accounts...");
-	     
-	     PreparedStatement ps = connection.prepareStatement("SELECT * from Customers");
-	     ResultSet customers = ps.executeQuery();
-	     while(customers.next()){
-
-		 String username = customers.getString("username");
-		 double balance = 0;
-		 int accountid = 0;
-		 
-		 PreparedStatement ps1 = connection.prepareStatement("select a.accountid, a.balance from Customers c, Accounts a where c.username = ? AND a.taxid = c.taxid");
-		 ps1.setString(1,username);
-		 ResultSet accounts = ps1.executeQuery();
-
-		 while(accounts.next()){
-		     accountid = accounts.getInt("accountid");
-		     balance = accounts.getDouble("balance");
-		 }
-
-		 double balanceAccum = balance;
-		 double DAB = 0;
-		 Date tempDate = date;
-		 String tempDate_s = dt.format(tempDate);
-		 
-		 try {
-		     PreparedStatement ps2 = connection.prepareStatement("SELECT * FROM Markettransactions where accountid = ? ");
-		     ps2.setInt(1,accountid);
-		     ResultSet transactions = ps2.executeQuery();
-		     System.out.println("Accountid: " + accountid);
-
-		     transactions.afterLast();
-		     while(transactions.previous()){
-			 
-			 String transDate_s = transactions.getString("date");
-
-			 Date transDate=null;
-			 try {
-			     transDate = dt.parse(transDate_s);
-			 }
-			 catch (Exception e) {
-			     e.printStackTrace();
-			 }
-			 
-			 double total  = transactions.getDouble("total");
-			 String type = transactions.getString("type");
-			 if(type.equals("withdraw") || type.equals("buy")){
-			     total *= 1;
-			 }
-			 
-			 if(transDate.equals(tempDate)){
-			     balanceAccum -= total;
-			 }
-			 
-			 else if(!transDate.equals(tempDate)){
-			     DAB += balanceAccum*(getDayFromDate(tempDate_s) - getDayFromDate(transDate_s));
-			     balanceAccum += total;
-			     tempDate = transDate; 
-			 }
-
-			 System.out.println("balanceaccum is: " + balanceAccum);
-		     }
-
-		     int days_left = getDayFromDate(tempDate_s);
-		     DAB += balanceAccum * days_left;
-		     double interest = DAB*0.03/getDayFromDate(date_s);
-		     System.out.println("Interest payment is: " + interest);
-		     
-		     try{
-			 PreparedStatement ps3 = connection.prepareStatement("insert into Markettransactions (accountid, date, type, total) values (?,?,?,?)");
-			 ps3.setInt(1,accountid);
-			 ps3.setString(2,date_s);
-			 ps3.setString(3,"interest");
-			 ps3.setDouble(4,interest);
-			 ps3.executeUpdate();
-		     } catch (SQLException e){
-			 e.printStackTrace();
-		     }
-
-		     try{
-			 PreparedStatement ps4 = connection.prepareStatement("Update Accounts set balance = ? where accountid = ?");
-			 double newBalance = balance + interest;
-			 ps4.setDouble(1, newBalance);
-			 ps4.setInt(2, accountid);
-			 ps4.executeUpdate();
-
-		     } catch (SQLException e){
-			 e.printStackTrace();
-		     }
-		     
-		 } catch (SQLException e){
-		     e.printStackTrace();
-		 }
-		 
-	     }
-
-	 }catch (SQLException e){
-            e.printStackTrace();
-	 }
 	 
+	System.out.println("Adding interest to all accounts...");
+	
+	try{
+	    PreparedStatement ps = connection.prepareStatement("SELECT * from Customers");
+	    ResultSet customers = ps.executeQuery();
+	    while(customers.next()){
+		
+		String username = customers.getString("username");
+		double balance = 0;
+		int accountid = 0;
+		
+		PreparedStatement ps1 = connection.prepareStatement("select a.accountid, a.balance from Customers c, Accounts a where c.username = ? AND a.taxid = c.taxid");
+		ps1.setString(1,username);
+		ResultSet accounts = ps1.executeQuery();
+		
+		while(accounts.next()){
+		    accountid = accounts.getInt("accountid");
+		    balance = accounts.getDouble("balance");
+		}
+		
+		double balanceAccum = balance;
+		double DAB = 0;
+		Date tempDate = date; // current date
+		String tempDate_s = dt.format(tempDate);
+		
+		try {
+		    PreparedStatement ps2 = connection.prepareStatement("SELECT * FROM Markettransactions where accountid = ? ");
+		    ps2.setInt(1,accountid);
+		    ResultSet transactions = ps2.executeQuery();
+		    System.out.println("Accountid: " + accountid);
+		    
+		    transactions.afterLast();
+		    while(transactions.previous()){
+			
+			String transDate_s = transactions.getString("date"); // date of transaction
+			
+			Date transDate=null;
+			try {
+			    transDate = dt.parse(transDate_s);
+			}
+			catch (Exception e) {
+			    e.printStackTrace();
+			}
+			
+			double total  = transactions.getDouble("total");
+			String type = transactions.getString("type");
+			if(type.equals("withdraw") || type.equals("buy")){
+			    total *= -1;
+			}
+			
+			if(transDate.equals(tempDate)){
+			    balanceAccum += total;
+			}
+			
+			else if(!transDate.equals(tempDate)){
+			    DAB += balanceAccum*(getDayFromDate(tempDate_s) - getDayFromDate(transDate_s));
+			    balanceAccum += total;
+			    tempDate = transDate; 
+			}
+			
+			System.out.println("balanceaccum is: " + balanceAccum);
+		    }
+		    
+		    int days_left = getDayFromDate(tempDate_s) - 1;
+		    DAB += balanceAccum * days_left;
+		    double interest = DAB*0.03/getDayFromDate(date_s);
+		    System.out.println("Interest payment is: " + interest);
+		    
+		    
+		    try{
+			PreparedStatement ps3 = connection.prepareStatement("insert into Markettransactions (accountid, date, type, total) values (?,?,?,?)");
+			ps3.setInt(1,accountid);
+			ps3.setString(2,date_s);
+			ps3.setString(3,"interest");
+			ps3.setDouble(4,interest);
+			//ps3.executeUpdate();
+			ps3.close();
+		    } catch (SQLException e){
+			e.printStackTrace();
+		    }
+		    
+		    try{
+			PreparedStatement ps4 = connection.prepareStatement("Update Accounts set balance = ? where accountid = ?");
+			double newBalance = balance + interest;
+			ps4.setDouble(1, newBalance);
+			ps4.setInt(2, accountid);
+			//ps4.executeUpdate();
+			ps4.close();
+		    } catch (SQLException e){
+			e.printStackTrace();
+		    }
+		    
+		    ps2.close();
+		    ps1.close();
+		} catch (SQLException e){
+		    e.printStackTrace();
+		}
+		
+	    }
+	    
+	    ps.close();
+	}  catch (SQLException e){
+	    e.printStackTrace();
+	}
+	
+	
     }
-
+    
+    // Gets the day as an integer from the format "yyyy-mm-dd"
     public int getDayFromDate(String date){
 	String day = "";
 	for(int i = date.length() -1; i > 0; i--){
@@ -443,7 +467,8 @@ public class BrokerageInterface {
 		name = customer.getString("name");
 		email = customer.getString("email");
 	    }
-	    
+
+	    ps.close();
 	} catch (SQLException e) {
             e.printStackTrace();
         }
@@ -474,7 +499,7 @@ public class BrokerageInterface {
 		System.out.println(accountidS + "|  " + date + "|  " + type +"|  " + total);
             }
 
-	    
+	    ps.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -508,7 +533,7 @@ public class BrokerageInterface {
                 System.out.println(accountidS + "|  " + date + "|  " + type +"|    " + stockid + "     | " + priceS + " | " + qtyS + " | " + total );
             }
 
-
+	    ps.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -527,7 +552,7 @@ public class BrokerageInterface {
 		String name = customers.getString("name");
 		System.out.println(name);
 	    }
-	    
+	    ps.close();
 	} catch (SQLException e) {
 	    e.printStackTrace();
 	}
@@ -551,7 +576,7 @@ public class BrokerageInterface {
 		System.out.println(username + ", " + state + ", " + totalEarned);
 	    }
 	    
-	    
+	    ps.close();
 	} catch (SQLException e) {
 	    e.printStackTrace();
 	}	
@@ -576,7 +601,8 @@ public class BrokerageInterface {
                 name = customer.getString("name");
                 email = customer.getString("email");
             }
-	    
+
+	    ps.close();
 	} catch (SQLException e) {
 	    e.printStackTrace();
 	}
@@ -596,7 +622,8 @@ public class BrokerageInterface {
 		String type = " Market ";
 		System.out.println(aidS + "| " + type + " | $" + balance);
 	    }
-	    
+
+	    ps.close();
 	} catch (SQLException e) {
             e.printStackTrace();
         }
@@ -618,7 +645,8 @@ public class BrokerageInterface {
 		
 	    }
 	    System.out.println("");
-	    
+
+	    ps.close();
 	} catch (SQLException e) {
             e.printStackTrace();
         }
@@ -634,6 +662,7 @@ public class BrokerageInterface {
 	    System.out.println("Deleting transactions for this month...");
             PreparedStatement ps = connection.prepareStatement("TRUNCATE Markettransactions");
 	    ps.executeUpdate();
+	    ps.close();
 	} catch (SQLException e) {
             e.printStackTrace();
         }
@@ -641,6 +670,7 @@ public class BrokerageInterface {
 	try{
             PreparedStatement ps = connection.prepareStatement("TRUNCATE Stocktransactions");
             ps.executeUpdate();
+	    ps.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
