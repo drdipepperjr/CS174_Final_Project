@@ -336,9 +336,19 @@ public class BrokerageInterface {
 		     } catch (SQLException e){
 			 e.printStackTrace();
 		     }
+
+		     try{
+			 PreparedStatement ps4 = connection.prepareStatement("Update Accounts set balance = ? where accountid = ?");
+			 double newBalance = balance + interest;
+			 ps4.setDouble(1, newBalance);
+			 ps4.setInt(2, accountid);
+			 ps4.executeQuery();
+
+		     } catch (SQLException e){
+			 e.printStackTrace();
+		     }
 		     
-			   
-		 }catch (SQLException e){
+		 } catch (SQLException e){
 		     e.printStackTrace();
 		 }
 		 
