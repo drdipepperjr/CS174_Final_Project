@@ -148,7 +148,6 @@ public class StockTradeMain {
 			continue;
 		    }
 		    int taxID=usernameCheck.getInt("taxid");
-		    System.out.println(taxID);
 		    
 		    TraderInterface ti= new TraderInterface(username, password, taxID ,currentDate_s, isOpen);
 		    ti.initialize();
