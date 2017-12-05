@@ -12,20 +12,23 @@ public class BrokerageInterface {
     public static final String PWD = "907";
     
     Connection connection = null;
-    private String date_s ="2014-12-01";
+    private String date_s ="2014-12-31";
     Calendar cal;
     Date date=null;
     DecimalFormat df;
+    SimpleDateFormat dt;
 
     public BrokerageInterface(){
 
-	SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd");
+	dt = new SimpleDateFormat("yyyy-MM-dd");
         try {
             date = dt.parse(date_s);
         }
         catch (Exception e) {
             e.printStackTrace();
 	}
+	Calendar cal = Calendar.getInstance();
+	cal.setTime(date);
 	df = new DecimalFormat("#");
 	df.setMaximumFractionDigits(2);
 	
@@ -77,6 +80,10 @@ public class BrokerageInterface {
 	    else if("list active customers".equals(choice)){
 		listActiveCustomers();
 	    }
+
+	    else if("dter".equals(choice)){
+		generateDTER();
+	    }
 	    
 	    else if("delete transactions".equals(choice)){
 
@@ -111,7 +118,6 @@ public class BrokerageInterface {
 
     // For all market accounts, add the appropriate amount of monthly interest to the balance
     public void addInterest(){
-
 	 try{
 	     System.out.println("Adding interest to all accounts...");
 	     
@@ -131,49 +137,66 @@ public class BrokerageInterface {
 		     accountid = accounts.getInt("accountid");
 		     balance = accounts.getDouble("balance");
 		 }
+
+		 double balanceAccum = balance;
+		 double DAB = 0;
+		 Date tempDate = date;
+		 String tempDate_s = dt.format(tempDate);
 		 
 		 try {
 		     PreparedStatement ps2 = connection.prepareStatement("SELECT * FROM Markettransactions where accountid = ? ");
 		     ps2.setInt(1,accountid);
 		     ResultSet transactions = ps2.executeQuery();
-		     
-		     
-		     double DAB = balance;
-		     int oldDate = date.getDay();
-		     
-		     transactions.last();
-		     while(transactions.previous()){
+		     System.out.println("Accountid: " + accountid);
 
+		     transactions.afterLast();
+		     while(transactions.previous()){
 			 
-			 String transdate = transactions.getString("date");
-			 Date transDate = null;
-			 SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd");
+			 String transDate_s = transactions.getString("date");
+
+			 Date transDate=null;
 			 try {
-			     transDate = dt.parse(transdate);
+			     transDate = dt.parse(transDate_s);
 			 }
 			 catch (Exception e) {
 			     e.printStackTrace();
 			 }
 			 
-			 int newDate = transDate.getDay();   
 			 double total  = transactions.getDouble("total");
 			 String type = transactions.getString("type");
 			 if(type.equals("withdraw") || type.equals("buy")){
-			     total *= -1;
+			     total *= 1;
 			 }
 			 
-			 if(newDate != oldDate){
-			     DAB += (oldDate - newDate) * balance;
-			     oldDate = newDate;
+			 if(transDate.equals(tempDate)){
+			     balanceAccum -= total;
+			 }
+			 
+			 else if(!transDate.equals(tempDate)){
+			     DAB += balanceAccum*(getDayFromDate(tempDate_s) - getDayFromDate(transDate_s));
+			     balanceAccum += total;
+			     tempDate = transDate; 
 			 }
 
-			 balance = balance + total;
-			 
+			 System.out.println("balanceaccum is: " + balanceAccum);
 		     }
 
-		     DAB = DAB / (date.getDay());
-		     System.out.println(username + " DAB: " + df.format(DAB));
-		 
+		     int days_left = getDayFromDate(tempDate_s);
+		     DAB += balanceAccum * days_left;
+		     double interest = DAB*0.03/getDayFromDate(date_s);
+		     System.out.println("Interest payment is: " + interest);
+		     
+		     try{
+			 PreparedStatement ps3 = connection.prepareStatement("insert into Markettransactions (accountid, date, type, total) values (?,?,?,?)");
+			 ps3.setInt(1,accountid);
+			 ps3.setString(2,date_s);
+			 ps3.setString(3,"interest");
+			 ps3.setDouble(4,interest);
+			 ps3.executeUpdate();
+		     } catch (SQLException e){
+			 e.printStackTrace();
+		     }
+		     
 			   
 		 }catch (SQLException e){
 		     e.printStackTrace();
@@ -185,6 +208,17 @@ public class BrokerageInterface {
             e.printStackTrace();
 	 }
 	 
+    }
+
+    public int getDayFromDate(String date){
+	String day = "";
+	for(int i = date.length() -1; i > 0; i--){
+	    char num = date.charAt(i);
+	    if((num == '0' && i != date.length()-1) || num == '-') break;
+	    day = num + day;
+	}
+	int result = Integer.parseInt(day);
+	return result;
     }
     
     // Given a customer,  do the following for each account she/he owns:
@@ -302,10 +336,25 @@ public class BrokerageInterface {
     // Generate a list of all customers who have made more than $10,000 in the last month,
     // including earnings from buying/selling stocks and interest. 
     // The residence state of each customer should also be listed.
-    public void generateDTER(){
+    public void generateDTER() throws SQLException{
 
-	// only need to count selling and interest
-	
+	try{
+	    System.out.println("Generating Drug and Tax Evasion Report (DTER)");
+	    PreparedStatement ps = connection.prepareStatement("select c.username, c.state, sum(total) as totalEarned from Customers c, Accounts a, Markettransactions m  where c.taxid = a.taxid AND a.accountid = m.accountid AND (m.type = ? OR m.type = ?) group by c.username having totalEarned > 10000");
+	    ps.setString(1,"sell");
+	    ps.setString(2,"interest");
+	    ResultSet DTER = ps.executeQuery();
+	    while(DTER.next()){
+		String username = DTER.getString("username");
+		String state = DTER.getString("state");
+		double totalEarned = DTER.getDouble("totalEarned");
+		System.out.println(username + ", " + state + ", " + totalEarned);
+	    }
+	    
+	    
+	} catch (SQLException e) {
+	    e.printStackTrace();
+	}	
     }
 
     // Generate a list of all accounts associated with a particular customer and the current balance.
