@@ -78,7 +78,7 @@ public class BrokerageInterface {
 	Scanner scanner = new Scanner(System.in);
 
 	while(loggedin){
-	    System.out.println("What would you like to do? (Add Interest / Generate Monthly Statement / List Active Customers / Generate DTER / Customer Report / Delete Transactions/ Open or Close Market / Change Date / Add Employee / Change Stock Prices / Add Stock / Logout");
+	    System.out.println("What would you like to do? (Add Interest / Generate Monthly Statement / List Active Customers / Generate DTER / Customer Report / Delete Transactions/ Open or Close Market / Change Date / Add Employee / Change Stock Price / Add Stock / Logout");
 	    String choice = scanner.nextLine();
 	    choice = choice.toLowerCase();
 
@@ -179,18 +179,18 @@ public class BrokerageInterface {
 		}
 	    }
 
-	    else if("change stock prices".equals(choice) || "csp".equals(choice){
+	    else if("change stock price".equals(choice) || "csp".equals(choice)){
 		
 		Double price;
 		String stockid;    
 		System.out.print("Which stock would you like to change? :   ");
 		stockid = scanner.nextLine();
-		Sytem.out.print("What is the new price of the stock? :   ");
+		System.out.print("What is the new price of the stock? :   ");
 		price = scanner.nextDouble();
 		scanner.nextLine();
 		    
 	    	try{
-			PreparedStatement ps = connection.prepareStatement("update Stocks set stockid = ? AND set price = ? where stockid = ?");
+			PreparedStatement ps = connection.prepareStatement("update Stocks set stockid = ?, currentprice = ? where stockid = ?");
 			ps.setString(1,stockid);
 			ps.setDouble(2,price);
 		    	ps.setString(3,stockid);
@@ -201,11 +201,11 @@ public class BrokerageInterface {
 			
 	    }
 	    
-	    else if("add stock".equals(choice) || "as".equals(choice){
+		else if("add stock".equals(choice) || "as".equals(choice)){
 		    
 		    Double price;
 		    String stockid, dob, name;
-		    System.out.print("What is the name of the new stock? :   ");
+		    System.out.print("What is the name of the new stock? (3 Characters):   ");
 		    stockid = scanner.nextLine();
 		    System.out.print("What is the price of the stock? :    ");
 		    price = scanner.nextDouble();
@@ -216,7 +216,7 @@ public class BrokerageInterface {
 		    dob = scanner.nextLine();
 		    
 		    try{
-			    PreparedStatement ps = connection.prepareStatement("insert into stocks (stockid,currentprice,dob,name) values (?,?,?,?)");
+			    PreparedStatement ps = connection.prepareStatement("insert into Stocks (stockid,currentprice,dob,name) values (?,?,?,?)");
 			    ps.setString(1,stockid);
 			    ps.setDouble(2,price);
 		            ps.setString(3,dob);
