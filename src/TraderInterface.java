@@ -95,8 +95,6 @@ public class TraderInterface{
                     
                     //deposit
                     if(choice.equals("deposit")||choice.equals("d")){
-                        System.out.println("id:"+ accountID);
-                        
                         System.out.print("Enter amount to deposit:  ");
                         double amount = 0;
                         try{
