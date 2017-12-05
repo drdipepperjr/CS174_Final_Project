@@ -546,7 +546,7 @@ public class BrokerageInterface {
     public void listActiveCustomers() throws SQLException{
 	
 	try{
-	    PreparedStatement ps = connection.prepareStatement("select c.name from Customers c, Accounts a, Stocktransactions s where c.taxid = a.taxid AND a.accountid = s.accountid group by a.accountid having sum(qty) > 1000");
+	    PreparedStatement ps = connection.prepareStatement("select c.name from Customers c, Accounts a, Stocktransactions s where c.taxid = a.taxid AND a.accountid = s.accountid group by a.accountid having sum(qty) >= 1000");
 	    ResultSet customers = ps.executeQuery();
 	    while(customers.next()){
 		String name = customers.getString("name");
