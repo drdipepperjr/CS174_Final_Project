@@ -21,8 +21,8 @@ public class StockTradeMain {
         }
         
         try {
-            connection = DriverManager.getConnection(HOST, USER, PWD);
-            
+            connection = DriverManager.getConnection(HOST, USER, PWD);	    
+	    
             // Ask for new or existing user
             while(true){
                 System.out.print("Are you a new or existing user? (new/existing/quit): ");
@@ -86,13 +86,13 @@ public class StockTradeMain {
                 
                 else if("existing".equals(input)){// Prompt user for username and password
                     String username, password;
-                    String currentDate_s="2014-12-01";
+                    String currentDate_s = null;
                     System.out.println("Please enter your username and password");
                     System.out.print("username: ");
                     username = scanner.nextLine();
                     System.out.print("password: ");
                     password = scanner.nextLine();
-                    
+		    
                     // Create SQL query
                     PreparedStatement ps = connection.prepareStatement("SELECT * from Customers WHERE username=? AND password=?");
                     ps.setString(1,username);
@@ -106,16 +106,22 @@ public class StockTradeMain {
                     
                     // Customer Login
                     else{
+			String isOpen = null;
+			PreparedStatement ps1 = connection.prepareStatement("Select * from Date");
+			ResultSet dateSet = ps1.executeQuery();
+			while(dateSet.next()){
+			    currentDate_s = dateSet.getString("date");
+			    isOpen = dateSet.getString("isopen"); 
+			}	
+			
                         // If there is no matching entry (first() returns false) then exit program
                         ResultSet usernameCheck = ps.executeQuery();
                         if(!usernameCheck.first()){
                             System.out.println("Invalid username/password combination.");
                             continue;
                         }
-                        int taxID=usernameCheck.getInt("taxid");
-                        System.out.println(taxID);
-                        
-                        TraderInterface ti= new TraderInterface(username, password, taxID ,currentDate_s);
+	        
+                        TraderInterface ti= new TraderInterface(username, password, taxID ,currentDate_s, isOpen);
                         ti.initialize();
                         
                     }
@@ -130,16 +136,7 @@ public class StockTradeMain {
                 else{
                     System.out.println("Sorry, that was not a valid respone. Please try again.");
                 }
-                
-                
-                // end of menu loop
-                
-                // Otherwise, do other stuff
-                //String A = usernameCheck.getString("name");
-                //int B = resultSet.getInt("B");
-                //int C = resultSet.getInt("C");
-                
-                //System.out.println(A);
+		
             }
             
         } catch (SQLException e) {

@@ -12,23 +12,15 @@ public class BrokerageInterface {
     public static final String PWD = "907";
     
     Connection connection = null;
-    private String date_s ="2014-12-31";
+    private String date_s = null;
     Calendar cal;
     Date date=null;
     DecimalFormat df;
     SimpleDateFormat dt;
+    String isOpen = null;
 
     public BrokerageInterface(){
 
-	dt = new SimpleDateFormat("yyyy-MM-dd");
-        try {
-            date = dt.parse(date_s);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-	}
-	Calendar cal = Calendar.getInstance();
-	cal.setTime(date);
 	df = new DecimalFormat("#");
 	df.setMaximumFractionDigits(2);
 	
@@ -51,11 +43,40 @@ public class BrokerageInterface {
 	    e.printStackTrace();
 	}
 
+
+	// Get the date from the DB
+	try{
+	    PreparedStatement ps = connection.prepareStatement("SELECT * FROM Date");
+	    ResultSet dateSet = ps.executeQuery();
+
+	    while(dateSet.next()){
+	        isOpen = dateSet.getString("isopen");
+		date_s = dateSet.getString("date");
+		dt = new SimpleDateFormat("yyyy-MM-dd");
+		try {
+		    date = dt.parse(date_s);
+		}
+		catch (Exception e) {
+		    e.printStackTrace();
+		}
+	    }
+	} catch (Exception e) {
+	    e.printStackTrace();
+	}
+
+	System.out.print("The current date is " + date_s + ".     The market is currently ");
+
+	if("no".equals(isOpen))
+	    System.out.print("closed.\n");
+
+	else if("yes".equals(isOpen))
+	    System.out.println("open. \n");
+	
 	boolean loggedin = true;
 	Scanner scanner = new Scanner(System.in);
 
 	while(loggedin){
-	    System.out.println("What would you like to do? (Add Interest/Generate Monthly Statement/List Active Customers/Generate DTER/Customer Report/Delete Transactions/Logout");
+	    System.out.println("What would you like to do? (Add Interest / Generate Monthly Statement / List Active Customers / Generate DTER / Customer Report / Delete Transactions/ open or close Market / Change Date / Logout");
 	    String choice = scanner.nextLine();
 	    choice = choice.toLowerCase();
 
@@ -90,7 +111,7 @@ public class BrokerageInterface {
 		System.out.println("Are you sure you want to delete ALL transactions for this month? (yes/no): ");
 		String lastchance = scanner.nextLine();
 		if("yes".equals(lastchance)){
-		    //deleteTransactions();
+		    deleteTransactions();
 		}
 		else
 		    System.out.println("Transactions for this month were NOT deleted");
@@ -99,6 +120,65 @@ public class BrokerageInterface {
 	    else if("logout".equals(choice)){
 		System.out.println("Logging out...");
 		loggedin = false;
+	    }
+
+	    else if("open market".equals(choice) || "open".equals(choice)){
+		if(isOpen.equals("yes")){
+		    System.out.println("The market is already open");
+		    
+		}
+
+		else{
+		    try{
+			PreparedStatement ps = connection.prepareStatement("update Date set isopen =?");
+			ps.setString(1,"yes");
+			ps.executeUpdate();
+			System.out.println("The market is now open.");
+			isOpen = "yes";
+		    } catch (SQLException e){
+			e.printStackTrace();
+		    }
+		    
+		}
+	    }
+
+	    else if("close market".equals(choice) || "close".equals(choice)){
+		if(isOpen.equals("no")){
+		    System.out.println("The market is already closed");	   
+		}
+
+		else{
+		    try{
+			PreparedStatement ps = connection.prepareStatement("update Date set isopen =?");
+			ps.setString(1,"no");
+			ps.executeUpdate();
+			System.out.println("The market is now closed.");
+			isOpen = "no";
+		    } catch (SQLException e){
+			e.printStackTrace();
+		    }
+		}   
+	    }
+
+	    else if("change date".equals(choice) || "cd".equals(choice)){
+
+		System.out.print("What would you like to change the date to? (yyyy-mm-dd): ");
+		String newDate = scanner.nextLine();
+		
+		try{
+
+		    PreparedStatement ps = connection.prepareStatement("update Date set date = ?");
+		    ps.setString(1,newDate);
+		    ps.executeUpdate();
+		    System.out.println("Date changed to   " + newDate);
+		    
+		} catch (SQLException e){
+		    e.printStackTrace();
+		}
+	    }
+	    
+	    else{
+		System.out.println("Sorry, that was not a valid option.");
 	    }
 	}
 
