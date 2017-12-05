@@ -25,7 +25,7 @@ public class StockTradeMain {
 	    
             // Ask for new or existing user
             while(true){
-                System.out.print("Are you a new or existing user? (new/existing/quit): ");
+                System.out.print("Are you a new user, existing user or administrator? (new/existing/admin/quit): ");
                 String input = scanner.nextLine();
                 if("new".equals(input)){
                     String newusername;
@@ -83,8 +83,36 @@ public class StockTradeMain {
                     }
                     
                 }
-                
-                else if("existing".equals(input)){// Prompt user for username and password
+
+		// admin login
+		else if("admin".equals(input)){
+		    String username, password;
+		    System.out.println("Please enter your username and password");
+		    System.out.print("username: ");
+                    username = scanner.nextLine();
+                    System.out.print("password: ");
+                    password = scanner.nextLine();
+
+		    PreparedStatement ps = connection.prepareStatement("SELECT * from Employees WHERE username=? AND password=?");
+                    ps.setString(1,username);
+                    ps.setString(2,password);
+		    ResultSet usernameCheck = ps.executeQuery();
+
+		    if(!usernameCheck.first()){
+			System.out.println("Invalid username/password combination.");
+			continue;
+		    }
+
+		    usernameCheck.beforeFirst();
+		    while(usernameCheck.next()){
+			String name = usernameCheck.getString("name");
+			BrokerageInterface bi = new BrokerageInterface(name);
+			bi.initialize();
+		    }
+		}
+
+		// Customer Login
+                else if("existing".equals(input) || "e".equals(input)){// Prompt user for username and password
                     String username, password;
                     String currentDate_s = null;
                     System.out.println("Please enter your username and password");
@@ -97,36 +125,28 @@ public class StockTradeMain {
                     PreparedStatement ps = connection.prepareStatement("SELECT * from Customers WHERE username=? AND password=?");
                     ps.setString(1,username);
                     ps.setString(2,password);
-
-                    // check for admin (may need to add admins to the db later)
-                    if("admin".equals(username) && "secret".equals(password)){
-                        BrokerageInterface bi = new BrokerageInterface();
-                        bi.initialize();
-                    }
+                   
+		    String isOpen = null;
+		    PreparedStatement ps1 = connection.prepareStatement("Select * from Date");
+		    ResultSet dateSet = ps1.executeQuery();
+		    while(dateSet.next()){
+			currentDate_s = dateSet.getString("date");
+			isOpen = dateSet.getString("isopen"); 
+		    }	
+		    
+		    // If there is no matching entry (first() returns false) then exit program
+		    ResultSet usernameCheck = ps.executeQuery();
+		    if(!usernameCheck.first()){
+			System.out.println("Invalid username/password combination.");
+			continue;
+		    }
+		    int taxID=usernameCheck.getInt("taxid");
+		    System.out.println(taxID);
+		    
+		    TraderInterface ti= new TraderInterface(username, password, taxID ,currentDate_s, isOpen);
+		    ti.initialize();
                     
-                    // Customer Login
-                    else{
-			String isOpen = null;
-			PreparedStatement ps1 = connection.prepareStatement("Select * from Date");
-			ResultSet dateSet = ps1.executeQuery();
-			while(dateSet.next()){
-			    currentDate_s = dateSet.getString("date");
-			    isOpen = dateSet.getString("isopen"); 
-			}	
-			
-                        // If there is no matching entry (first() returns false) then exit program
-                        ResultSet usernameCheck = ps.executeQuery();
-                        if(!usernameCheck.first()){
-                            System.out.println("Invalid username/password combination.");
-                            continue;
-                        }
-                        int taxID=usernameCheck.getInt("taxid");
-                        System.out.println(taxID);
-
-                        TraderInterface ti= new TraderInterface(username, password, taxID ,currentDate_s, isOpen);
-                        ti.initialize();
-                        
-                    }
+                    
                 }
                 
                 

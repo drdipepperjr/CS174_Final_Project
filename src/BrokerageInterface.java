@@ -18,16 +18,18 @@ public class BrokerageInterface {
     DecimalFormat df;
     SimpleDateFormat dt;
     String isOpen = null;
+    String name;
 
-    public BrokerageInterface(){
+    public BrokerageInterface(String name){
 
 	df = new DecimalFormat("#");
 	df.setMaximumFractionDigits(2);
+	this.name = name;
 	
     }
     
     public void initialize() throws SQLException {
-	System.out.println("Welcome to the System, John Admin");
+	System.out.println("Welcome to the System, " + name);
 	
 	try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -76,7 +78,7 @@ public class BrokerageInterface {
 	Scanner scanner = new Scanner(System.in);
 
 	while(loggedin){
-	    System.out.println("What would you like to do? (Add Interest / Generate Monthly Statement / List Active Customers / Generate DTER / Customer Report / Delete Transactions/ open or close Market / Change Date / Logout");
+	    System.out.println("What would you like to do? (Add Interest / Generate Monthly Statement / List Active Customers / Generate DTER / Customer Report / Delete Transactions/ Open or Close Market / Change Date / Add Employee / Logout");
 	    String choice = scanner.nextLine();
 	    choice = choice.toLowerCase();
 
@@ -96,8 +98,8 @@ public class BrokerageInterface {
                 System.out.print("Please enter the customer's username to generate their report: ");
                 username = scanner.nextLine();
                 customerReport(username);
-}
-
+	    }
+	    
 	    else if("list active customers".equals(choice)){
 		listActiveCustomers();
 	    }
@@ -176,16 +178,74 @@ public class BrokerageInterface {
 		    e.printStackTrace();
 		}
 	    }
+
+	    else if("add employee".equals(choice) || "ae".equals(choice)){
+
+		String newusername;
+		String newpassword;
+                
+
+		System.out.print("Please enter the new username: ");
+		newusername = scanner.nextLine();
+                
+		// Check DB for existing user
+		PreparedStatement ps = connection.prepareStatement("SELECT * from Employees WHERE username=?");
+		ps.setString(1,newusername);
+		ResultSet existinguser = ps.executeQuery();
+		if(!existinguser.first()){
+		    String name, address, state, phone, email, SSN;
+		    int taxid;
+                    
+		    // Ask user for personal info
+		    System.out.print("Please enter the password: ");
+		    newpassword = scanner.nextLine();
+		    System.out.print("Please enter their name: ");
+		    name = scanner.nextLine();
+		    System.out.print("Please enter their address: ");
+		    address = scanner.nextLine();
+		    System.out.print("Please enter their state they live in (2 character state code): ");
+		    state = scanner.nextLine();
+		    System.out.print("Please enter their phone number ( (xxx)xxxxxxx ): ");
+		    phone = scanner.nextLine();
+		    System.out.print("Please enter their email: ");
+		    email = scanner.nextLine();
+		    System.out.print("Please enter their Tax Identification Number (4 digits): ");
+		    taxid = scanner.nextInt();
+		    scanner.nextLine();
+		    System.out.print("Please enter their Social Security Number (xxx-xx-xxxx): ");
+		    SSN = scanner.nextLine();
+                    
+		    // Insert values into the DB
+		    ps = connection.prepareStatement("INSERT into Employees (name, username, password, address, state, phone, email, taxid, SSN) VALUES(?,?,?,?,?,?,?,?,?)");
+		    ps.setString(1,name);
+		    ps.setString(2,newusername);
+		    ps.setString(3,newpassword);
+		    ps.setString(4,address);
+		    ps.setString(5,state);
+		    ps.setString(6,phone);
+		    ps.setString(7,email);
+		    ps.setInt(8,taxid);
+		    ps.setString(9,SSN);
+		    ps.executeUpdate();
+		    
+		    System.out.println("The new employee has been added");
+		}
+		
+		
+		else
+		    System.out.println("Sorry, username is already taken. Please enter a unique username");
+	    }
+	    
 	    
 	    else{
 		System.out.println("Sorry, that was not a valid option.");
 	    }
 	}
-
+	
 	
 	endSession();
     }
-   
+    
     public void endSession() throws SQLException{
 	try{
 	    if(connection != null)
