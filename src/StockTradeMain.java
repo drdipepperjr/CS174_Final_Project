@@ -74,7 +74,14 @@ public class StockTradeMain {
                             ps.setInt(8,taxid);
                             ps.setString(9,SSN);
                             ps.executeUpdate();
+                            ps.close();
                             
+                            // Insert accounts
+                            addAccounts = connection.prepareStatement("INSERT into Accounts (taxid, balance) VALUES(?,0)");
+                            addAccounts.setInt(1,taxid);
+                            addAccounts.executeUpdate();
+                            addAccounts.close();
+			
                             System.out.println("Thank you for joining us. Please login to continue");
                             break;
                         }
