@@ -342,7 +342,7 @@ public class BrokerageInterface {
 			 double newBalance = balance + interest;
 			 ps4.setDouble(1, newBalance);
 			 ps4.setInt(2, accountid);
-			 ps4.executeQuery();
+			 ps4.executeUpdate();
 
 		     } catch (SQLException e){
 			 e.printStackTrace();
