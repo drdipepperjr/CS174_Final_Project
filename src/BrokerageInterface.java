@@ -190,7 +190,7 @@ public class BrokerageInterface {
 		scanner.nextLine();
 		    
 	    	try{
-			PreparedStatement ps = connection.prepareStatement("update Stocks set stockid = ? AND set price = ? where stockid = ?);
+			PreparedStatement ps = connection.prepareStatement("update Stocks set stockid = ? AND set price = ? where stockid = ?");
 			ps.setString(1,stockid);
 			ps.setDouble(2,price);
 		    	ps.setString(3,stockid);
@@ -216,7 +216,7 @@ public class BrokerageInterface {
 		    dob = scanner.nextLine();
 		    
 		    try{
-			    PreparedStatement ps = connection.prepareStatement("insert into stocks (stockid,currentprice,dob,name) values (?,?,?,?));
+			    PreparedStatement ps = connection.prepareStatement("insert into stocks (stockid,currentprice,dob,name) values (?,?,?,?)");
 			    ps.setString(1,stockid);
 			    ps.setDouble(2,price);
 		            ps.setString(3,dob);
