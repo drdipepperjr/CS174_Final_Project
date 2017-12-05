@@ -77,7 +77,7 @@ public class StockTradeMain {
                             ps.close();
                             
                             // Insert accounts
-                            addAccounts = connection.prepareStatement("INSERT into Accounts (taxid, balance) VALUES(?,0)");
+                            PreparedStatement addAccounts = connection.prepareStatement("INSERT into Accounts (taxid, balance) VALUES(?,0)");
                             addAccounts.setInt(1,taxid);
                             addAccounts.executeUpdate();
                             addAccounts.close();
