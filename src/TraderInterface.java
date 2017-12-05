@@ -20,12 +20,17 @@ public class TraderInterface{
     private String password =null;
     private int taxID =0;
     private String date_s =null;
+    private boolean open=false;
     
-    public TraderInterface(String user, String pass,int tax, String day){
+    public TraderInterface(String user, String pass,int tax, String day, String isOpen){
         username_s = user;
         password = pass;
         taxID = tax;
         date_s = day;
+        if (isOpen.equals("yes")){
+            open=true;
+        }else {
+            open=false;}
     }
     
     public void initialize() throws SQLException {
@@ -47,8 +52,6 @@ public class TraderInterface{
         cal.add(Calendar.MONTH, -1);
         
         String lastMonth_s= dt.format(cal.getTime());
-        System.out.println(lastMonth_s);
-        
         
         System.out.println("Welcome to the System");
         
@@ -72,7 +75,6 @@ public class TraderInterface{
             if(rs.first()){
                 accountID=rs.getInt("accountid");
                 balance=rs.getDouble("balance");
-                System.out.println("accountid: " +accountID+ " balance: "+balance);
             }
             
             boolean loggedin=true;
@@ -93,9 +95,7 @@ public class TraderInterface{
                     
                     //deposit
                     if(choice.equals("deposit")||choice.equals("d")){
-                        System.out.println(taxID);
-                        System.out.println(username_s);
-                        System.out.println(accountID);
+                        
                         System.out.print("Enter amount to deposit:  ");
                         double amount = 0;
                         try{
@@ -114,7 +114,7 @@ public class TraderInterface{
                             adjustAccount.setInt(2,taxID);
                             
                             adjustAccount.executeUpdate();
-                            System.out.println("New Balance: " + df.format(balance));
+                            System.out.println("New Balance: $" + df.format(balance));
                             adjustAccount.close();
                             
                             PreparedStatement addTransaction = connection.prepareStatement("INSERT into Markettransactions (accountid, date, type, total) VALUES(?,?,'deposit',?)");
@@ -145,7 +145,7 @@ public class TraderInterface{
                             adjustAccount.setDouble(1,balance);
                             adjustAccount.setInt(2, taxID);
                             adjustAccount.executeUpdate();
-                            System.out.println("New Balance: " + df.format(balance));
+                            System.out.println("New Balance: $" + df.format(balance));
                             adjustAccount.close();
                             
                             PreparedStatement addTransaction = connection.prepareStatement("INSERT into Markettransactions (accountid, date, type, total) VALUES(?,?,'withdraw',?)");
@@ -161,6 +161,10 @@ public class TraderInterface{
                     
                     // buy
                     else if(choice.equals("buy")||choice.equals("b")){
+                        if (open==false){
+                            System.out.println("Sorry the market is closed");
+                            break;
+                        }
                         System.out.println("Enter stock name: ");
                         String stockID = scan.nextLine();
                         stockID = stockID.toUpperCase();
@@ -195,7 +199,7 @@ public class TraderInterface{
                             adjustAccount.setDouble(1,balance);
                             adjustAccount.setInt(2, taxID);
                             adjustAccount.executeUpdate();
-                            System.out.println("New Balance: " + df.format(balance));
+                            System.out.println("New Balance: $" + df.format(balance));
                             adjustAccount.close();
                             //add transaction
                             PreparedStatement addTransaction = connection.prepareStatement("INSERT into Stocktransactions (accountid, date, type, stockid, price, qty, total) VALUES(?,?,'buy',?,?,?,?)");
@@ -252,6 +256,10 @@ public class TraderInterface{
                     
                     // sell
                     else if(choice.equals("sell")||choice.equals("s")){
+                        if (open==false){
+                            System.out.println("Sorry the market is closed");
+                            break;
+                        }
                         System.out.println("Enter stock name: ");
                         String stockID = scan.nextLine();
                         stockID = stockID.toUpperCase();
@@ -303,7 +311,7 @@ public class TraderInterface{
                                 adjustAccount.setDouble(1,balance);
                                 adjustAccount.setInt(2, taxID);
                                 adjustAccount.executeUpdate();
-                                System.out.println("New Balance: " + df.format(balance));
+                                System.out.println("New Balance: $" + df.format(balance));
                                 adjustAccount.close();
                                 
                                 
@@ -353,13 +361,11 @@ public class TraderInterface{
                         
                         System.out.println("Here are the transactions since "+ lastMonth_s);
                         while(!tempDate_s.equals(lastMonth_s)){
-                            //debugging code
-                            //System.out.println("temp: "+ tempDate_s);
+
                             PreparedStatement stocksTrans = connection.prepareStatement("SELECT * FROM Stocktransactions WHERE date=? AND accountid=?");
                             stocksTrans.setString(1,tempDate_s);
                             stocksTrans.setInt(2,accountID);
                             rs = stocksTrans.executeQuery();
-                            //System.out.println(accountID);
                             while (rs.next()){
                                 String transdate =rs.getString("date");
                                 String stock =rs.getString("stockid");
@@ -520,3 +526,4 @@ public class TraderInterface{
         
     }
 }
+
