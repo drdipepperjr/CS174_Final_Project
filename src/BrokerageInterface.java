@@ -78,7 +78,7 @@ public class BrokerageInterface {
 	Scanner scanner = new Scanner(System.in);
 
 	while(loggedin){
-	    System.out.println("What would you like to do? (Add Interest / Generate Monthly Statement / List Active Customers / Generate DTER / Customer Report / Delete Transactions/ Open or Close Market / Change Date / Add Employee / Change Stock Price / Add Stock / Logout");
+	    System.out.println("What would you like to do? (Add Interest / Monthly Statement / List Active Customers / DTER / Customer Report / Delete Transactions/ Open or Close Market / Change Date / Add Employee / Change Stock Price / Add Stock / Logout");
 	    String choice = scanner.nextLine();
 	    choice = choice.toLowerCase();
 
@@ -198,43 +198,43 @@ public class BrokerageInterface {
 	        } catch (SQLException e){
 			e.printStackTrace();
 		}
-			
+		
 	    }
 	    
-		else if("add stock".equals(choice) || "as".equals(choice)){
-		    
-		    Double price;
-		    String stockid, dob, name;
-		    System.out.print("What is the name of the new stock? (3 Characters):   ");
-		    stockid = scanner.nextLine();
-		    System.out.print("What is the price of the stock? :    ");
-		    price = scanner.nextDouble();
-		    scanner.nextLine();
-		    System.out.print("What is the name of the actor? :   ");
-		    name = scanner.nextLine();
-		    System.out.print("What is the Date of Birth of the actor? (yyyy-mm-dd) :   ");
-		    dob = scanner.nextLine();
-		    
-		    try{
-			    PreparedStatement ps = connection.prepareStatement("insert into Stocks (stockid,currentprice,dob,name) values (?,?,?,?)");
-			    ps.setString(1,stockid);
-			    ps.setDouble(2,price);
-		            ps.setString(3,dob);
-		            ps.setString(4,name);
-			    ps.executeUpdate();
-	            } catch(SQLException e){
-			    e.printStackTrace();
-		    }
-			
-	     }
-									       
-									       
+	    else if("add stock".equals(choice) || "as".equals(choice)){
+		
+		Double price;
+		String stockid, dob, name;
+		System.out.print("What is the name of the new stock? (3 Characters):   ");
+		stockid = scanner.nextLine();
+		System.out.print("What is the price of the stock? :    ");
+		price = scanner.nextDouble();
+		scanner.nextLine();
+		System.out.print("What is the name of the actor? :   ");
+		name = scanner.nextLine();
+		System.out.print("What is the Date of Birth of the actor? (yyyy-mm-dd) :   ");
+		dob = scanner.nextLine();
+		
+		try{
+		    PreparedStatement ps = connection.prepareStatement("insert into Stocks (stockid,currentprice,dob,name) values (?,?,?,?)");
+		    ps.setString(1,stockid);
+		    ps.setDouble(2,price);
+		    ps.setString(3,dob);
+		    ps.setString(4,name);
+		    ps.executeUpdate();
+		} catch(SQLException e){
+		    e.printStackTrace();
+		}
+		
+	    }
+	    
+	    
 	    else if("add employee".equals(choice) || "ae".equals(choice)){
-
+		
 		String newusername;
 		String newpassword;
                 
-
+		
 		System.out.print("Please enter the new username: ");
 		newusername = scanner.nextLine();
                 
