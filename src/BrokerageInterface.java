@@ -487,17 +487,14 @@ public class BrokerageInterface {
 	    PreparedStatement ps = connection.prepareStatement("Select s.stockqty,s.stockid from SharesOwned s, Customers c where c.username =? AND s.taxid = c.taxid");
 	    ps.setString(1,username);
 	    ResultSet stocks = ps.executeQuery();
-	    
-	    //int aid = stocks.getInt("accountid");
-	    //String aidS= String.format("%03d",aid);
-	    //aidS = String.format("%-11s", aidS);
-	    //String type = "  Stock   ";
+
+	    System.out.print("Stocks owned (Name,Quantity):    ");
 	    
 	    while(stocks.next()){
 		
 		String qty = ""+stocks.getInt("stockqty");
 		String stockid = stocks.getString("stockid");
-		System.out.print("("+stockid + "," + qty + ")");
+		System.out.print("("+stockid + "," + qty + ")  ");
 		
 	    }
 	    System.out.println("");
